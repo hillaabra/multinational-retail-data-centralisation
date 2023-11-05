@@ -8,7 +8,7 @@ class DatabaseConnector:
     # Method that reads the credentials in the yaml file and returns a dictionary of the credentials
     @staticmethod
     def read_db_creds():
-      with open('multinational-retail-data-centralisation/db_creds.yaml', 'r') as stream: # check relative filepath later
+      with open('db_creds.yaml', 'r') as stream: # check relative filepath later
           dict_db_creds = yaml.safe_load(stream)
 
       return dict_db_creds
@@ -42,5 +42,6 @@ test = DatabaseConnector()
 # result = inspector.get_table_names()
 # print(result)
 
-result = test.list_db_tables()
-print(result)
+if __name__ == "__main__":
+  result = test.list_db_tables()
+  print(result)
