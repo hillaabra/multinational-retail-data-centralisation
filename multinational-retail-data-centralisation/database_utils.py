@@ -1,3 +1,5 @@
+
+import psycopg2
 import yaml
 from sqlalchemy import create_engine, inspect
 
@@ -16,15 +18,14 @@ class DatabaseConnector:
 
       dict_db_creds = self.read_db_creds()
 
-      DATABASE_TYPE = 'postgresql'
-      DBAPI = 'psycopg2'
-      HOST = dict_db_creds['RDS_HOST']
-      USER = dict_db_creds['RDS_USER']
-      PASSWORD = dict_db_creds['RDS_PASSWORD']
-      DATABASE = dict_db_creds['RDS_DATABASE']
-      PORT = dict_db_creds['RDS_PORT']
+      conf = {
+        'HOST': dict_db_creds['RDS_HOST'],
+        'USER': dict_db_creds['RDS_USER'],
+        'PASSWORD': dict_db_creds['RDS_PASSWORD'],
+        'DATABASE': dict_db_creds['RDS_DATABASE'],
+        'PORT': dict_db_creds['RDS_PORT']}
 
-      engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
+      engine = create_engine("postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}".format(**conf))
 
       return engine
 
@@ -32,9 +33,14 @@ class DatabaseConnector:
     def list_db_tables(self):
       engine = self.init_db_engine()
       inspector = inspect(engine)
-      inspector.get_table_names()
-
+      table_names = inspector.get_table_names()
+      return table_names
 
 test = DatabaseConnector()
-result = test.read_db_creds()
+# engine = test.init_db_engine()
+# inspector = inspect(engine)
+# result = inspector.get_table_names()
+# print(result)
+
+result = test.list_db_tables()
 print(result)
