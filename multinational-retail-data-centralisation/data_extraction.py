@@ -24,5 +24,3 @@ class DataExtractor:
 de = DataExtractor()
 dc = DatabaseConnector()
 user_data = de.read_rds_table(dc, 'legacy_users')
-
-user_data.head()
