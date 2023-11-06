@@ -47,8 +47,14 @@ class DataCleaning:
         ud_df['country_code'].replace({'GGB': 'GB'}, inplace=True)
 
         # convert country and country code into category datatypes (and make uniform) - also delete one of these columns - redundant?
+        category_columns = ['country_code', 'country']
+
+        for column in category_columns:
+            ud_df[column] = ud_df[column].astype('category')
 
         # make phone_number uniform
+
+        # check for duplicated user_uud
 
 # %%
 user_data.head()
@@ -130,4 +136,6 @@ for code in ud_copy['country_code'].unique():
     print(f"unique values for country code {code}: ", ud_copy[['country', 'country_code']][ud_copy['country_code'] == code]['country'].unique())
 # %%
 ud_copy['country_code'].replace({'GGB': 'GB'}, inplace=True)
+# %%
+ud_copy['country'].astype('category').unique()
 # %%
