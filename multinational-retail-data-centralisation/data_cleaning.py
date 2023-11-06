@@ -1,6 +1,9 @@
-from data_extraction import user_data
+import numpy as np
+import pandas as pd
+from  data_extraction import user_data
 
-
+print(type(user_data))
+# I need to figure ou
 class DataCleaning:
 
     # Method to clean the user data (look for NULL values,
