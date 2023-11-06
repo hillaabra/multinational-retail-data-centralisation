@@ -43,8 +43,12 @@ class DataCleaning:
         for column in date_value_columns:
             ud_df[column] = pd.to_datetime(ud_df[column], format='mixed', errors='coerce') # or use dateutil.parse parser?
 
+        # replace 'GGB' values for 'GB' in country_code (for "United Kingdom")
+        ud_df['country_code'].replace({'GGB': 'GB'}, inplace=True)
 
         # convert country and country code into category datatypes (and make uniform) - also delete one of these columns - redundant?
+
+        # make phone_number uniform
 
 # %%
 user_data.head()
@@ -113,4 +117,17 @@ ud_copy.join_date = pd.to_datetime(ud_copy.join_date, format='mixed', errors='co
 ud_copy.sort_values(by='join_date', axis=0).head(50)
 # %%
 ud_copy.join_date.describe()
+# %%
+ud_copy['country_code'].unique()
+# %%
+ud_copy[['country', 'country_code']][ud_copy['country_code'] == 'GB']
+# %%
+ud_copy[['country', 'country_code']][ud_copy['country_code'] == 'GB']['country'].unique()
+# %%
+ud_copy[['country', 'country_code']][ud_copy['country_code'] == 'DE']['country'].unique()
+# %%
+for code in ud_copy['country_code'].unique():
+    print(f"unique values for country code {code}: ", ud_copy[['country', 'country_code']][ud_copy['country_code'] == code]['country'].unique())
+# %%
+ud_copy['country_code'].replace({'GGB': 'GB'}, inplace=True)
 # %%
