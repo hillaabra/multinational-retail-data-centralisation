@@ -53,9 +53,13 @@ class DataCleaning:
             ud_df[column] = ud_df[column].astype('category')
 
         # replace invalid UK phone numbers with np.nan
-        uk_subset = ud_copy[ud_copy['country_code'] == 'GB']
+        uk_subset = ud_df[ud_df['country_code'] == 'GB']
         uk_tel_regex = r'^(?:(?:\(?(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?(?:\(?0\)?[\s-]?)?)|(?:\(?0))(?:(?:\d{5}\)?[\s-]?\d{4,5})|(?:\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3}))|(?:\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4})|(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}))(?:[\s-]?(?:x|ext\.?|\#)\d{3,4})?$'
         uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'] = np.nan
+
+        # replace invalid US phone numbers with np.nan
+
+        # replace invalid DE phone numbers with np.nan
 
         # make phone_number uniform: UK numbers, German numbers, US numbers,
 
