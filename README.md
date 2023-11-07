@@ -113,8 +113,10 @@ German phone number validation was harder.
 - Is 0 a valid street number? See address field.
 - format phone numbers to remove country code
 - improve regex for US and UK
-- refactor code - make modular
+- refactor data cleaning code - make modular
+- format datetime objects to remove times
 - check for duplicate data
+- refactor code in database_utils
 
 ### Issues I encountered:
 - I was trying to use subsets to replace erroneous values. I modified this by accessing the filtered data using .loc that combined a conditional filtering for the subset of data and a mask identifying the regex matches (or non-matches).
