@@ -21,6 +21,7 @@ class DataExtractor:
 
 
 # Use the read_rds_table method to extract the table containing user data and return a pandas DataFrame.
+
 de = DataExtractor()
 dc = DatabaseConnector()
 user_data = de.read_rds_table(dc, 'legacy_users')

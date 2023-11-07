@@ -74,4 +74,5 @@ class DataCleaning:
 
         return ud_df
 
-cleaned_user_data = DataCleaning().clean_user_data()
+if __name__ == "__main__":
+    cleaned_user_data = DataCleaning().clean_user_data()
