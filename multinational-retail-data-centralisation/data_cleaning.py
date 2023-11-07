@@ -4,11 +4,12 @@ import numpy as np
 import pandas as pd
 from  data_extraction import user_data
 
-
+# %%
 class DataCleaning:
 
     # Method to clean the user data (look for NULL values,
     # errors with dates, incorrectly typed values and rows filled with the wrong info)
+    @staticmethod
     def clean_user_data():
 
         ud_df = user_data.copy()
@@ -24,13 +25,9 @@ class DataCleaning:
         for column in string_value_columns:
             ud_df[column] = ud_df[column].astype('string')
 
-        # Delete all rows where the "first_name" is NULL using dropna
-        # ud_df.dropna(subset='first_name', inplace=True)
-        # Is this still needed?
-
         # Delete all rows where the "first_name" is equal to "NULL" string
-        mask_null_string_for_first_name = ud_df[ud_df['first_name'] == "NULL"]
-        ud_df = ud_df[~mask_null_string_for_first_name]
+        ud_df.loc[ud_df['first_name'] == "NULL", 'first_name'] = np.nan # first replace strings with an NaN value
+        ud_df.dropna(subset='first_name', inplace=True)
 
         # Delete all rows where the "first_name" value contains a numeric digit
         mask_numeric_digit_in_first_name = ud_df['first_name'].str.contains(pat='[0-9]', regex=True)
@@ -53,6 +50,7 @@ class DataCleaning:
             ud_df[column] = ud_df[column].astype('category')
 
         # replace invalid UK phone numbers with np.nan
+        # edit this regex to also accommodate trailing whitespace?
         uk_subset = ud_df[ud_df['country_code'] == 'GB']
         uk_tel_regex = r'^(?:(?:\(?(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?(?:\(?0\)?[\s-]?)?)|(?:\(?0))(?:(?:\d{5}\)?[\s-]?\d{4,5})|(?:\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3}))|(?:\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4})|(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}))(?:[\s-]?(?:x|ext\.?|\#)\d{3,4})?$'
         uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'] = np.nan
@@ -62,19 +60,38 @@ class DataCleaning:
         # This regex allows for a lot of flexibility in how the number may be inputted,
         # but it counts as invalid any number where (counting from after the country code)
         # the 1st or 4th digit is 0 or 1.
+        # edit this regex to also accommodate trailing whitespace?
         us_tel_regex = r'^((0{1,2}\s?1|\+1|1)[\.\s-]?)?\(?([2-9][0-9]{2})\)?[\.\s-]?[2-9][0-9]{2}[\.\s-]?\d{4}(?:[\.\s]*((?:#|x\.?|ext\.?|extension)\s*(\d+)))?'
         us_subset.loc[~us_subset['phone_number'].str.match(us_tel_regex), 'phone_number'] = np.nan
 
 
         # replace invalid DE phone numbers with np.nan
-
+        german_tel_regex = r'^\s*((((00|\+)?49)((\s)|\s?\(0\)\s?)?)?|\(?(0\s?)?)?\(?(((([2-9]\d)|1[2-9])\)?[-\s](\d\s?){5,9}\d?)|((([2-9]\d{2})|1[2-9]\d)\)?[-\s]?(\d\s?){4,8}\d)|((([2-9]\d{3})|1[2-9]\d{2})\)?[-\s](\d\s?){3,7}\d?))\s*$'
+        ud_df.loc[ud_df['country_code'] == 'DE'].where(~ud_df['phone_number'].str.match(german_tel_regex), other=np.nan, inplace=True)
         # make phone_number uniform: UK numbers, German numbers, US numbers - for later if there's time
 
-
-        # check one last time for errors in dates...
+        return ud_df
 
 # %%
-user_data.head()
+test = DataCleaning()
+cleaned__user_data = test.clean_user_data()
+# %%
+cleaned__user_data.info()
+# %%
+cleaned__user_data.sort_values(by='address', ascending=False)
+# %%
+cleaned__user_data.loc[cleaned__user_data['user_uuid'] == '4db656b2-f085-40e5-ba18-eb6372b17632']
+# %%
+cleaned__user_data.iloc[8827] # don't know why indexing isn't working ...
+# %%
+german_subset = cleaned__user_data[cleaned__user_data['country_code'] == 'DE']
+german_tel_regex = r'^\s*((((00|\+)?49)((\s)|\s?\(0\)\s?)?)?|\(?(0\s?)?)?\(?(((([2-9]\d)|1[2-9])\)?[-\s](\d\s?){5,9}\d?)|((([2-9]\d{2})|1[2-9]\d)\)?[-\s]?(\d\s?){4,8}\d)|((([2-9]\d{3})|1[2-9]\d{2})\)?[-\s](\d\s?){3,7}\d?))\s*$'
+# %%
+cleaned__user_data.loc[cleaned__user_data['country_code'] == 'DE'][~cleaned__user_data['phone_number'].str.match(german_tel_regex), 'phone_number'] = np.nan
+# %%
+cleaned__user_data.loc[cleaned__user_data['user_uuid'] == '4db656b2-f085-40e5-ba18-eb6372b17632']
+# %%
+cleaned__user_data.loc[cleaned__user_data['country_code'] == 'DE'].where(~cleaned__user_data['phone_number'].str.match(german_tel_regex), other=np.nan, inplace=True)
 # %%
 ud_copy = user_data.copy()
 ud_copy.set_index('index', inplace = True)
@@ -100,7 +117,8 @@ ud_copy = ud_copy[~mask]
 
 # %%
 ud_copy.date_of_birth = pd.to_datetime(ud_copy.date_of_birth, format='mixed', errors='coerce')
-ud_copy.date_of_birth.info()
+# %%
+ud_copy.join_date.info()
 # %%
 ud_copy.date_of_birth.describe()
 # COME BACK TO THIS - the max value is 20th Nov 2006 - is this invalid? 17 years old....
@@ -209,12 +227,6 @@ uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'
 # %%
 uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number']
 # %%
-#us_tel_regex = r'^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$'
-# this regex didn't work
-#us_tel_regex = r'^(?:(?:(\+|(00))?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$'
-
-#us_tel_regex = r'^([a-zA-Z,#/ \.\(\)\-\+\*]*[2-9])([a-zA-Z,#/ \.\(\)\-\+\*]*[0-9]){2}([a-zA-Z,#/ \.\(\)\-\+\*]*[2-9])([a-zA-Z,#/ \.\(\)\-\+\*]*[0-9]){6}[0-9a-zA-Z,#/ \.\(\)\-\+\*]*$'
-
 # this regex i made - it discounts any number where, counting from after the country  code, the 1st or 4th digits are 0 or 1.
 us_tel_regex = r'^((0{1,2}\s?1|\+1|1)[\.\s-]?)?\(?([2-9][0-9]{2})\)?[\.\s-]?[2-9][0-9]{2}[\.\s-]?\d{4}(?:[\.\s]*((?:#|x\.?|ext\.?|extension)\s*(\d+)))?'
 us_subset = ud_copy[ud_copy['country_code'] == 'US']
@@ -237,4 +249,28 @@ ud_copy["user_uuid"].info() # no nul entries
 ud_copy["user_uuid"].nunique()
 # %%
 ud_copy["user_uuid"].head(50)
+# %%
+german_subset = ud_copy[ud_copy['country_code'] == 'DE']
+# %%
+mask = german_subset['phone_number'].str.contains('[A-Za-z]', regex=True)
+# %%
+german_subset['phone_number']
+# %%
+german_tel_regex = r'^\s*((((00|\+)?49)((\s)|\s?\(0\)\s?)?)?|\(?(0\s?)?)?\(?(((([2-9]\d)|1[2-9])\)?[-\s](\d\s?){5,9}\d?)|((([2-9]\d{2})|1[2-9]\d)\)?[-\s]?(\d\s?){4,8}\d)|((([2-9]\d{3})|1[2-9]\d{2})\)?[-\s](\d\s?){3,7}\d?))\s*$'
+valid_german_nos = german_subset['phone_number'].str.match(german_tel_regex)
+
+german_subset_with_valid_german_nos = german_subset[valid_german_nos]
+
+german_subset_with_invalid_german_nos = german_subset[~valid_german_nos]
+
+german_subset_with_invalid_german_nos[['country_code', 'phone_number']]
+# %%
+german_subset_with_invalid_german_nos[['country_code', 'phone_number']].head(50)
+# %%
+
+german_subset.loc[~german_subset['phone_number'].str.match(german_tel_regex), 'phone_number'] = np.nan
+# %%
+german_subset_with_valid_german_nos['phone_number'].head(50)
+# %%
+
 # %%
