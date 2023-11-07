@@ -51,24 +51,27 @@ class DataCleaning:
 
         # replace invalid UK phone numbers with np.nan
         # edit this regex to also accommodate trailing whitespace?
-        uk_subset = ud_df[ud_df['country_code'] == 'GB']
         uk_tel_regex = r'^(?:(?:\(?(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?(?:\(?0\)?[\s-]?)?)|(?:\(?0))(?:(?:\d{5}\)?[\s-]?\d{4,5})|(?:\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3}))|(?:\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4})|(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}))(?:[\s-]?(?:x|ext\.?|\#)\d{3,4})?$'
-        uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'] = np.nan
+        mask_valid_uk_tel = ud_df['phone_number'].str.match(uk_tel_regex)
+        ud_df.loc[~mask_valid_uk_tel & (ud_df['country_code'] == 'GB'), 'phone_number'] = np.nan
 
         # replace invalid US phone numbers with np.nan
-        us_subset = ud_df[ud_df['country_code'] == 'US']
         # This regex allows for a lot of flexibility in how the number may be inputted,
         # but it counts as invalid any number where (counting from after the country code)
         # the 1st or 4th digit is 0 or 1.
         # edit this regex to also accommodate trailing whitespace?
         us_tel_regex = r'^((0{1,2}\s?1|\+1|1)[\.\s-]?)?\(?([2-9][0-9]{2})\)?[\.\s-]?[2-9][0-9]{2}[\.\s-]?\d{4}(?:[\.\s]*((?:#|x\.?|ext\.?|extension)\s*(\d+)))?'
-        us_subset.loc[~us_subset['phone_number'].str.match(us_tel_regex), 'phone_number'] = np.nan
+        mask_valid_us_tel = ud_df['phone_number'].str.match(us_tel_regex)
+        ud_df.loc[~mask_valid_us_tel & (ud_df['country_code'] == 'US'), 'phone_number'] = np.nan
 
 
         # replace invalid DE phone numbers with np.nan
         german_tel_regex = r'^\s*((((00|\+)?49)((\s)|\s?\(0\)\s?)?)?|\(?(0\s?)?)?\(?(((([2-9]\d)|1[2-9])\)?[-\s](\d\s?){5,9}\d?)|((([2-9]\d{2})|1[2-9]\d)\)?[-\s]?(\d\s?){4,8}\d)|((([2-9]\d{3})|1[2-9]\d{2})\)?[-\s](\d\s?){3,7}\d?))\s*$'
-        ud_df.loc[ud_df['country_code'] == 'DE'].where(~ud_df['phone_number'].str.match(german_tel_regex), other=np.nan, inplace=True)
+        mask_valid_german_tel = ud_df['phone_number'].str.match(german_tel_regex)
+        ud_df.loc[~mask_valid_german_tel & (ud_df['country_code'] == 'DE'), 'phone_number'] = np.nan
+
         # make phone_number uniform: UK numbers, German numbers, US numbers - for later if there's time
+
 
         return ud_df
 
