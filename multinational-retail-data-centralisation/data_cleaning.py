@@ -1,5 +1,5 @@
 # %%
-# import re # needed?
+import re
 import numpy as np
 import pandas as pd
 from  data_extraction import user_data
@@ -19,7 +19,7 @@ class DataCleaning:
         ud_df.set_index('index', inplace=True)
 
         # Cast the "first_name" and "last_name" values to strings
-        string_value_columns = ['first_name', 'last_name', 'company', 'email_address', 'address', 'country', 'user_uuid']
+        string_value_columns = ['first_name', 'last_name', 'company', 'email_address', 'address', 'phone_number', 'user_uuid']
 
         for column in string_value_columns:
             ud_df[column] = ud_df[column].astype('string')
@@ -52,7 +52,13 @@ class DataCleaning:
         for column in category_columns:
             ud_df[column] = ud_df[column].astype('category')
 
-        # make phone_number uniform
+        # replace invalid UK phone numbers with np.nan
+        uk_subset = ud_copy[ud_copy['country_code'] == 'GB']
+        uk_tel_regex = r'^(?:(?:\(?(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?(?:\(?0\)?[\s-]?)?)|(?:\(?0))(?:(?:\d{5}\)?[\s-]?\d{4,5})|(?:\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3}))|(?:\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4})|(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}))(?:[\s-]?(?:x|ext\.?|\#)\d{3,4})?$'
+        uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'] = np.nan
+
+        # make phone_number uniform: UK numbers, German numbers, US numbers,
+
 
         # check for duplicated user_uud
 
@@ -138,4 +144,57 @@ for code in ud_copy['country_code'].unique():
 ud_copy['country_code'].replace({'GGB': 'GB'}, inplace=True)
 # %%
 ud_copy['country'].astype('category').unique()
+# %%
+category_columns = ['country_code', 'country']
+
+for column in category_columns:
+    ud_copy[column] = ud_copy[column].astype('category')
+# %%
+uk_phone_nos = ud_copy['phone_number'][ud_copy['country_code'] == 'GB']
+# %%
+uk_phone_nos
+# %%
+german_phone_nos = ud_copy['phone_number'][ud_copy['country_code'] == 'DE']
+us_phone_nos = ud_copy['phone_number'][ud_copy['country_code'] == 'US']
+# %%
+german_phone_nos
+# %%
+us_phone_nos
+# %%
+ud_copy['phone_number'] = ud_copy['phone_number'].astype('string')
+# %%
+ud_copy.info()
+# %%
+import re
+# %%
+
+uk_tel_regex = r'^(?:(?:\(?(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?(?:\(?0\)?[\s-]?)?)|(?:\(?0))(?:(?:\d{5}\)?[\s-]?\d{4,5})|(?:\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3}))|(?:\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4})|(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}))(?:[\s-]?(?:x|ext\.?|\#)\d{3,4})?$'
+# Much better result ^^.
+#valid_uk_nos = uk_phone_nos[uk_phone_nos.str.match(uk_tel_regex)]
+
+# %%
+# maybe this is the issue....
+
+# valid_uk_nos = ud_copy[ud_copy['country_code'] == 'GB']['phone_number'].str.contains(pat=uk_tel_regex, regex=True)
+# invalid_uk_nos = ud_copy[ud_copy['country_code'] == 'GB'][~valid_uk_nos]
+# %%
+uk_subset = ud_copy[ud_copy['country_code'] == 'GB']
+valid_uk_nos = uk_subset['phone_number'].str.match(uk_tel_regex)
+
+uk_subset_with_valid_uk_nos = uk_subset[valid_uk_nos]
+
+uk_subset_with_valid_uk_nos
+
+uk_subset_with_invalid_uk_nos = uk_subset[~valid_uk_nos]
+
+uk_subset_with_invalid_uk_nos
+
+# %%
+uk_subset_with_invalid_uk_nos[['country_code', 'phone_number']]
+uk_subset_with_valid_uk_nos[['country_code', 'phone_number']]
+# %%
+uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'] = np.nan
+
+# %%
+uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number']
 # %%
