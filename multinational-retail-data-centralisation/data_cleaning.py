@@ -58,13 +58,20 @@ class DataCleaning:
         uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'] = np.nan
 
         # replace invalid US phone numbers with np.nan
+        us_subset = ud_df[ud_df['country_code'] == 'US']
+        # This regex allows for a lot of flexibility in how the number may be inputted,
+        # but it counts as invalid any number where (counting from after the country code)
+        # the 1st or 4th digit is 0 or 1.
+        us_tel_regex = r'^((0{1,2}\s?1|\+1|1)[\.\s-]?)?\(?([2-9][0-9]{2})\)?[\.\s-]?[2-9][0-9]{2}[\.\s-]?\d{4}(?:[\.\s]*((?:#|x\.?|ext\.?|extension)\s*(\d+)))?'
+        us_subset.loc[~us_subset['phone_number'].str.match(us_tel_regex), 'phone_number'] = np.nan
+
 
         # replace invalid DE phone numbers with np.nan
 
-        # make phone_number uniform: UK numbers, German numbers, US numbers,
+        # make phone_number uniform: UK numbers, German numbers, US numbers - for later if there's time
 
 
-        # check for duplicated user_uud
+        # check one last time for errors in dates...
 
 # %%
 user_data.head()
@@ -201,4 +208,33 @@ uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number'
 
 # %%
 uk_subset.loc[~uk_subset['phone_number'].str.match(uk_tel_regex), 'phone_number']
+# %%
+#us_tel_regex = r'^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$'
+# this regex didn't work
+#us_tel_regex = r'^(?:(?:(\+|(00))?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$'
+
+#us_tel_regex = r'^([a-zA-Z,#/ \.\(\)\-\+\*]*[2-9])([a-zA-Z,#/ \.\(\)\-\+\*]*[0-9]){2}([a-zA-Z,#/ \.\(\)\-\+\*]*[2-9])([a-zA-Z,#/ \.\(\)\-\+\*]*[0-9]){6}[0-9a-zA-Z,#/ \.\(\)\-\+\*]*$'
+
+# this regex i made - it discounts any number where, counting from after the country  code, the 1st or 4th digits are 0 or 1.
+us_tel_regex = r'^((0{1,2}\s?1|\+1|1)[\.\s-]?)?\(?([2-9][0-9]{2})\)?[\.\s-]?[2-9][0-9]{2}[\.\s-]?\d{4}(?:[\.\s]*((?:#|x\.?|ext\.?|extension)\s*(\d+)))?'
+us_subset = ud_copy[ud_copy['country_code'] == 'US']
+
+valid_us_nos = us_subset['phone_number'].str.match(us_tel_regex)
+
+us_subset_with_valid_us_nos = us_subset[valid_us_nos]
+
+us_subset_with_invalid_us_nos = us_subset[~valid_us_nos]
+
+us_subset_with_invalid_us_nos[['country_code', 'phone_number']]
+# %%
+us_subset_with_valid_us_nos[['country_code', 'phone_number']]
+# %%
+
+# %%
+## check for duplicated user_uuid
+ud_copy["user_uuid"].info() # no nul entries
+# %%
+ud_copy["user_uuid"].nunique()
+# %%
+ud_copy["user_uuid"].head(50)
 # %%
