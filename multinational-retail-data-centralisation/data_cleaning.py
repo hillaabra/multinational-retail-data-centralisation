@@ -73,3 +73,5 @@ class DataCleaning:
 
 
         return ud_df
+
+cleaned_user_data = DataCleaning().clean_user_data()
