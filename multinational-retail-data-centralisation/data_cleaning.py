@@ -1,7 +1,8 @@
-import re # is this still needed?
+# import re # is this still needed?
+# %%
 import numpy as np
 import pandas as pd
-from  data_extraction import user_data
+from  data_extraction import card_data, user_data
 
 
 class DataCleaning:
@@ -74,5 +75,33 @@ class DataCleaning:
 
         return ud_df
 
-if __name__ == "__main__":
-    cleaned_user_data = DataCleaning().clean_user_data()
+    @staticmethod
+    def clean_card_date():
+
+
+
+        pass
+
+        # remove any erroneous values, NULL values or errors with formatting
+
+        # remove errors wtih formatting - column headings at headers of pages after p.1 were transferred over
+        mask_formatting_errors = card_data['card_number'] == 'card_number'
+        card_data = card_data[~mask_formatting_errors]
+
+
+# if __name__ == "__main__":
+  #   cleaned_user_data = DataCleaning().clean_user_data()
+# %%
+
+cd_df = card_data
+
+# %%
+mask_formatting_errors = cd_df['card_number'] == 'card_number'
+cd_df[mask_formatting_errors]
+# %%
+cd_df = cd_df[~mask_formatting_errors]
+
+# %%
+mask_formatting_errors = cd_df['card_number'] == 'card_number'
+cd_df[mask_formatting_errors]
+# %%
