@@ -78,15 +78,16 @@ class DataCleaning:
     @staticmethod
     def clean_card_date():
 
-
-
-        pass
-
         # remove any erroneous values, NULL values or errors with formatting
 
         # remove errors wtih formatting - column headings at headers of pages after p.1 were transferred over
-        mask_formatting_errors = card_data['card_number'] == 'card_number'
-        card_data = card_data[~mask_formatting_errors]
+        # in same function, remove all rows where the card_number has a non-integer value in it
+        # the values were already extracted as strings
+        arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
+        mask_nonnumeric_values_in_card_number_col = cd_df["card_number"].isin(values=arr_nonnumeric_values_in_card_number_col)
+        card_data = card_data[~mask_nonnumeric_values_in_card_number_col]
+
+        # remove rows with card numbers that are an invalid number of digits
 
 
 # if __name__ == "__main__":
@@ -104,4 +105,53 @@ cd_df = cd_df[~mask_formatting_errors]
 # %%
 mask_formatting_errors = cd_df['card_number'] == 'card_number'
 cd_df[mask_formatting_errors]
+# %%
+cd_df.info()
+# %%
+cd_df.loc[cd_df['card_number'] == None]
+# %%
+mask_non_numerical_values = cd_df.loc[cd_df['card_number'].str.match('.*[^\d].*'), 'card_number']
+# %%
+cd_df[[]].loc[mask_non_numerical_values]
+# %%
+cd_df.loc[cd_df['card_number'] == pd.NA]
+
+# %%
+cd_df.loc[cd_df['card_number'].str.match('.*[^\d].*'), 'card_number']
+# %%
+pat = r'[^\d]'
+mask = cd_df['card_number'].str.contains(pat, regex=True)
+# %%
+cd_df[mask]
+# %%
+cd_df['card_number'].astype('string').sort_values(ascending=False)
+# %%
+nos_as_string = cd_df['card_number'].astype('string')
+pattern = r'[]'
+nos_as_string.loc[~nos_as_string['card_number'].str.match(), 'card_number']
+# %%
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]["card_number"].unique()
+# %%
+mask = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
+# %%
+# %%
+cd_df['card_number'] = cd_df['card_number'].astype('string')
+# %%
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"]
+# %%
+cd_df = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
+# %%
+arr_invalid_card_numbers = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
+# %%
+mask = cd_df["card_number"].isin(values=arr_invalid_card_numbers)
+# %%
+cd_df
+# %%
+cd_df = cd_df[~mask]
+# %%
+cd_df.info()
+# %%
+cd_df['card_number'].map(lambda x: len(x)).describe()
+# %%
+cd_df['card_number'].map(lambda x: len(x)).value_counts()
 # %%
