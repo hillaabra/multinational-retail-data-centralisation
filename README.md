@@ -124,7 +124,7 @@ German phone number validation was harder.
 ## Cleaning card_data table
 
 ### card_number column
-- Tabula processed the columns from the PDF as a string
+
 - I retrieved the values that contained non-numeric data types:
 ```
 cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
