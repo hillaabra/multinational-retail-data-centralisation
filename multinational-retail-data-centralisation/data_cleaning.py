@@ -2,8 +2,9 @@
 # %%
 import numpy as np
 import pandas as pd
+from pandas.tseries.offsets import MonthEnd
+from dateutil.parser import parse
 from  data_extraction import card_data, user_data
-
 
 class DataCleaning:
 
@@ -72,7 +73,6 @@ class DataCleaning:
 
         # make phone_number uniform: UK numbers, German numbers, US numbers - for later if there's time
 
-
         return ud_df
 
 
@@ -94,13 +94,36 @@ class DataCleaning:
 
         return cd_df
 
+    def convert_expiry_date_to_datetime(cd_df):
+
+        cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
+
+        # convert the dates to datetime
+        cd_df['expiry_date'] = cd_df['expiry_date'].dt.date + MonthEnd(0)
+
+        return cd_df
+
+    def convert_payment_confirmation_date_to_datetime(cd_df):
+
+        cd_df.loc[:, 'date_payment_confirmed'] = cd_df['date_payment_confirmed'].apply(parse)
+
+        cd_df['date_payment_confirmed'] = pd.to_datetime(cd_df['date_payment_confirmed'], format='mixed', errors='coerce')
+
+        return cd_df
+
     def clean_card_date(self):
         # clean up card_number column, and remove NaN values
         cd_df = card_data.copy()
         cd_df = self.clean_card_number_data(cd_df)
 
-        #convert date columns to datetime types
+        # convert date columns to datetime
+        cd_df = self.convert_expiry_date_to_datetime(cd_df)
+        cd_df = self.convert_payment_confirmation_date_to_datetime(cd_df)
 
+        # convert card_provider column to category
+        cd_df['card_provider'] = cd_df['card_provider'].astype('category')
+
+        return cd_df
 
 # if __name__ == "__main__":
   #   cleaned_user_data = DataCleaning().clean_user_data()
@@ -109,111 +132,8 @@ class DataCleaning:
 cd_df = card_data
 
 # %%
-mask_formatting_errors = cd_df['card_number'] == 'card_number'
-cd_df[mask_formatting_errors]
-# %%
-cd_df = cd_df[~mask_formatting_errors]
-
-# %%
-mask_formatting_errors = cd_df['card_number'] == 'card_number'
-cd_df[mask_formatting_errors]
-# %%
-cd_df.info()
-# %%
-cd_df.loc[cd_df['card_number'] == None]
-# %%
-mask_non_numerical_values = cd_df.loc[cd_df['card_number'].str.match('.*[^\d].*'), 'card_number']
-# %%
-cd_df[[]].loc[mask_non_numerical_values]
-# %%
-cd_df.loc[cd_df['card_number'] == pd.NA]
-
-# %%
-cd_df.loc[cd_df['card_number'].str.match('.*[^\d].*'), 'card_number']
-# %%
-pat = r'[^\d]'
-mask = cd_df['card_number'].str.contains(pat, regex=True)
-# %%
-cd_df[mask]
-# %%
-cd_df['card_number'].astype('string').sort_values(ascending=False)
-# %%
-nos_as_string = cd_df['card_number'].astype('string')
-pattern = r'[]'
-nos_as_string.loc[~nos_as_string['card_number'].str.match(), 'card_number']
-# %%
-cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]["card_number"].unique()
-# %%
-mask = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
-# %%
-# %%
-cd_df['card_number'] = cd_df['card_number'].astype('string')
-# %%
-cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"]
-# %%
-cd_df = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
-# %%
-cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
-# %%
-mask = cd_df["card_number"].isin(values=arr_invalid_card_numbers)
-# %%
-cd_df
-# %%
-cd_df = cd_df[~mask]
-# %%
-cd_df.info()
-# %%
-cd_df['card_number'].map(lambda x: len(x)).describe()
-# %%
-cd_df['card_number'].map(lambda x: len(x)).value_counts()
-# %%
-cd_df['card_provider'].unique()
-# %%
-cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
-# %%
-mask_formatting_errors = cd_df['card_number'] == 'card_number'
-cd_df = cd_df[~mask_formatting_errors]
-# %%
-cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]
-# %%
-cd_df['card_number'] = cd_df['card_number'].apply(lambda x: x.replace('?', '') if type(x) == 'string' else x)
-# %%
-cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
-# %%
-cd_df.info()
-# %%
-mask_formatting_errors = cd_df['card_number'] == 'card_number'
-cd_df = cd_df[~mask_formatting_errors]
-# %%
-if type(cd_df['card_number']) == 'string':
-    cd_df['card_number'] = cd_df['card_number'].replace('?', '')
-
-# %%
-# remove NAn's first
-
-cd_df.dropna(subset = ['card_number'])[~ cd_df["card_number"].str.isnumeric().fillna(False)]
-# %%
-cd_df['card_number'] = cd_df['card_number'].replace('?', '')
-# %%
-cd_df.loc[:, 'card_number'] = cd_df['card_number'].replace('?', '')
-# %%
-cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]
-# %%
-cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
-# %%
- # remove NaN values
-cd_df.dropna(subset = ['card_number'], inplace=True)
-# %%
-arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
-mask_nonnumeric_values_in_card_number_col = cd_df["card_number"].isin(values=arr_nonnumeric_values_in_card_number_col)
-cd_df = cd_df[~mask_nonnumeric_values_in_card_number_col]
-# %%
-arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
-# %%
-arr_nonnumeric_values_in_card_number_col
-# %%
-
-
+# clean card number data
+# remove rows where column headings were transferred over as data values
 mask_formatting_errors = cd_df['card_number'] == 'card_number'
 cd_df = cd_df[~mask_formatting_errors]
 
@@ -223,21 +143,84 @@ cd_df.dropna(subset = ['card_number'], inplace=True)
 # remove all occurences of '?' in number strings
 cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
 
-# %%
-cd_df.card_number.info()
-
-# %%
 # this leaves the rows that are erroneous - mixed alphanumeric strings for every column
 # dropping rows containing strings with non-numeric characters
-# I could probably refactor this
-arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
-mask_nonnumeric_values_in_card_number_col = cd_df["card_number"].isin(values=arr_nonnumeric_values_in_card_number_col)
-cd_df = cd_df[~mask_nonnumeric_values_in_card_number_col]
+cd_df = cd_df[cd_df["card_number"].str.isnumeric()]
+
 
 # %%
-cd_df = cd_df[cd_df["card_number"].str.isnumeric()]
+cd_df.sort_values('expiry_date')['expiry_date']
 # %%
-cd_df.sort_values('card_number', ascending=False)
+from datetime import datetime
+pd.to_datetime64(cd_df['expiry_date'], format='%d/%m/%Y', errors='raise')
+# %% THIS IS THE ONE
+# cd_df.loc[:, 'expiry_date'] = cd_df.expiry_date.apply(lambda x: '01/' + str(x))
+cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
+# cd_df.loc[:, 'expiry_date'] = cd_df['expiry_date'].dt.date + MonthEnd(0)
 # %%
-cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
+# %%
+cd_df_altered = cd_df['expiry_date'].dt.date + MonthEnd(0)
+# %%
+# %%
+pd.to_datetime(cd_df['expiry_date'], format='mixed', errors='coerce').isna().count()
+# %%
+cd_df[~pd.to_datetime(cd_df['expiry_date'], format='mixed', errors='coerce').isna()]['expiry_date'].unique()
+# These are all invalid dates - should be replaced with 'NaT'
+# %%
+pd.to_datetime(cd_df['expiry_date'], format='%d/%m/%Y', errors='raise')
+# %%
+ # NOT HELPFUL HERE
+# %%
+cd_df['expiry_date'] = cd_df['expiry_date'].apply(lambda x: x if '/32' not in x else parse(x))
+cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], infer_datetime_format=True, errors='coerce')
+# %%
+print("\nModified dataframe:\n")
+print(cd_df['expiry_date'])
+print("\nData types:\n")
+print(mixed_date_df.dtypes)
+# %%
+cd_df['expiry_date'] = cd_df['expiry_date'].apply(lambda x: parse(x) if x.format != '' else x)
+# %%
+print(pd.to_datetime('11/32'))
+# %%
+cd_df['expiry_date'].head(50)
+# %%
+card_data.head(50)
+# %%
+
+
+from datetime import date
+# %%
+test_date = cd_df.iloc[1500]['expiry_date']
+# %%
+print(test_date)
+# %%
+print(date.fromisoformat(test_date))
+# %%
+cd_df.asfreq()
+
+# %%
+pd.to_datetime(cd_df['expiry_date'], errors='coerce').head()
+# %%
+cd_df.head()
+# %%
+pd.to_datetime(cd_df['date_payment_confirmed'], errors='raise').head()
+# %%
+cd_df['date_payment_confirmed'].head(50)
+# %%
+
+# %%
+# Jared's method
+
+
+# Sample DataFrame
+data = {'date_column': ['09/23', '10/22', '12/21']}
+df = pd.DataFrame(data)
+
+# Convert the 'date_column' to datetimedf['date_column'] = pd.to_datetime(df['date_column'], format='%m/%y')
+
+# Change the day to the last day of the monthdf['date_column'] = df['date_column'] + pd.offsets.MonthEnd()
+# Print the updated DataFrameprint(df)
+# %%
+cd_df['expiry_date']
 # %%
