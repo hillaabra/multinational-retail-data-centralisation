@@ -75,19 +75,31 @@ class DataCleaning:
 
         return ud_df
 
+
     @staticmethod
-    def clean_card_date():
+    def clean_card_number_data(cd_df):
+        # remove rows where column headings were transferred over as data values
+        mask_formatting_errors = cd_df['card_number'] == 'card_number'
+        cd_df = cd_df[~mask_formatting_errors]
 
-        # remove any erroneous values, NULL values or errors with formatting
+        # remove NaN values
+        cd_df.dropna(subset = ['card_number'], inplace=True)
 
-        # remove errors wtih formatting - column headings at headers of pages after p.1 were transferred over
-        # in same function, remove all rows where the card_number has a non-integer value in it
-        # the values were already extracted as strings
-        arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
-        mask_nonnumeric_values_in_card_number_col = cd_df["card_number"].isin(values=arr_nonnumeric_values_in_card_number_col)
-        card_data = card_data[~mask_nonnumeric_values_in_card_number_col]
+        # remove all occurences of '?' in number strings
+        cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
 
-        # remove rows with card numbers that are an invalid number of digits
+        # this leaves the rows that are erroneous - mixed alphanumeric strings for every column
+        # dropping rows containing strings with non-numeric characters
+        cd_df = cd_df[cd_df["card_number"].str.isnumeric()]
+
+        return cd_df
+
+    def clean_card_date(self):
+        # clean up card_number column, and remove NaN values
+        cd_df = card_data.copy()
+        cd_df = self.clean_card_number_data(cd_df)
+
+        #convert date columns to datetime types
 
 
 # if __name__ == "__main__":
@@ -141,7 +153,7 @@ cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"]
 # %%
 cd_df = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
 # %%
-arr_invalid_card_numbers = cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
 # %%
 mask = cd_df["card_number"].isin(values=arr_invalid_card_numbers)
 # %%
@@ -154,4 +166,78 @@ cd_df.info()
 cd_df['card_number'].map(lambda x: len(x)).describe()
 # %%
 cd_df['card_number'].map(lambda x: len(x)).value_counts()
+# %%
+cd_df['card_provider'].unique()
+# %%
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
+# %%
+mask_formatting_errors = cd_df['card_number'] == 'card_number'
+cd_df = cd_df[~mask_formatting_errors]
+# %%
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]
+# %%
+cd_df['card_number'] = cd_df['card_number'].apply(lambda x: x.replace('?', '') if type(x) == 'string' else x)
+# %%
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(True)]
+# %%
+cd_df.info()
+# %%
+mask_formatting_errors = cd_df['card_number'] == 'card_number'
+cd_df = cd_df[~mask_formatting_errors]
+# %%
+if type(cd_df['card_number']) == 'string':
+    cd_df['card_number'] = cd_df['card_number'].replace('?', '')
+
+# %%
+# remove NAn's first
+
+cd_df.dropna(subset = ['card_number'])[~ cd_df["card_number"].str.isnumeric().fillna(False)]
+# %%
+cd_df['card_number'] = cd_df['card_number'].replace('?', '')
+# %%
+cd_df.loc[:, 'card_number'] = cd_df['card_number'].replace('?', '')
+# %%
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]
+# %%
+cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
+# %%
+ # remove NaN values
+cd_df.dropna(subset = ['card_number'], inplace=True)
+# %%
+arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
+mask_nonnumeric_values_in_card_number_col = cd_df["card_number"].isin(values=arr_nonnumeric_values_in_card_number_col)
+cd_df = cd_df[~mask_nonnumeric_values_in_card_number_col]
+# %%
+arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
+# %%
+arr_nonnumeric_values_in_card_number_col
+# %%
+
+
+mask_formatting_errors = cd_df['card_number'] == 'card_number'
+cd_df = cd_df[~mask_formatting_errors]
+
+# remove NaN values
+cd_df.dropna(subset = ['card_number'], inplace=True)
+
+# remove all occurences of '?' in number strings
+cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
+
+# %%
+cd_df.card_number.info()
+
+# %%
+# this leaves the rows that are erroneous - mixed alphanumeric strings for every column
+# dropping rows containing strings with non-numeric characters
+# I could probably refactor this
+arr_nonnumeric_values_in_card_number_col = cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
+mask_nonnumeric_values_in_card_number_col = cd_df["card_number"].isin(values=arr_nonnumeric_values_in_card_number_col)
+cd_df = cd_df[~mask_nonnumeric_values_in_card_number_col]
+
+# %%
+cd_df = cd_df[cd_df["card_number"].str.isnumeric()]
+# %%
+cd_df.sort_values('card_number', ascending=False)
+# %%
+cd_df[~ cd_df["card_number"].str.isnumeric()]["card_number"].unique()
 # %%
