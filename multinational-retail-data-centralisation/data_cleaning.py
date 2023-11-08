@@ -99,7 +99,7 @@ class DataCleaning:
         cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
 
         # convert the dates to datetime
-        cd_df['expiry_date'] = cd_df['expiry_date'].dt.date + MonthEnd(0)
+        cd_df['expiry_date'] = cd_df['expiry_date'] + MonthEnd(0)
 
         return cd_df
 
@@ -137,90 +137,39 @@ cd_df = card_data
 mask_formatting_errors = cd_df['card_number'] == 'card_number'
 cd_df = cd_df[~mask_formatting_errors]
 
+# %%
 # remove NaN values
 cd_df.dropna(subset = ['card_number'], inplace=True)
 
+# %%
 # remove all occurences of '?' in number strings
 cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
 
+# %%
 # this leaves the rows that are erroneous - mixed alphanumeric strings for every column
 # dropping rows containing strings with non-numeric characters
 cd_df = cd_df[cd_df["card_number"].str.isnumeric()]
 
+# %%
 
-# %%
-cd_df.sort_values('expiry_date')['expiry_date']
-# %%
-from datetime import datetime
-pd.to_datetime64(cd_df['expiry_date'], format='%d/%m/%Y', errors='raise')
-# %% THIS IS THE ONE
-# cd_df.loc[:, 'expiry_date'] = cd_df.expiry_date.apply(lambda x: '01/' + str(x))
 cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
-# cd_df.loc[:, 'expiry_date'] = cd_df['expiry_date'].dt.date + MonthEnd(0)
-# %%
-# %%
-cd_df_altered = cd_df['expiry_date'].dt.date + MonthEnd(0)
-# %%
-# %%
-pd.to_datetime(cd_df['expiry_date'], format='mixed', errors='coerce').isna().count()
-# %%
-cd_df[~pd.to_datetime(cd_df['expiry_date'], format='mixed', errors='coerce').isna()]['expiry_date'].unique()
-# These are all invalid dates - should be replaced with 'NaT'
-# %%
-pd.to_datetime(cd_df['expiry_date'], format='%d/%m/%Y', errors='raise')
-# %%
- # NOT HELPFUL HERE
-# %%
-cd_df['expiry_date'] = cd_df['expiry_date'].apply(lambda x: x if '/32' not in x else parse(x))
-cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], infer_datetime_format=True, errors='coerce')
-# %%
-print("\nModified dataframe:\n")
-print(cd_df['expiry_date'])
-print("\nData types:\n")
-print(mixed_date_df.dtypes)
-# %%
-cd_df['expiry_date'] = cd_df['expiry_date'].apply(lambda x: parse(x) if x.format != '' else x)
-# %%
-print(pd.to_datetime('11/32'))
-# %%
-cd_df['expiry_date'].head(50)
-# %%
-card_data.head(50)
-# %%
-
-
-from datetime import date
-# %%
-test_date = cd_df.iloc[1500]['expiry_date']
-# %%
-print(test_date)
-# %%
-print(date.fromisoformat(test_date))
-# %%
-cd_df.asfreq()
 
 # %%
-pd.to_datetime(cd_df['expiry_date'], errors='coerce').head()
-# %%
-cd_df.head()
-# %%
-pd.to_datetime(cd_df['date_payment_confirmed'], errors='raise').head()
-# %%
-cd_df['date_payment_confirmed'].head(50)
-# %%
+# convert the dates to datetime
+cd_df['expiry_date'] = cd_df['expiry_date'] + MonthEnd()
 
 # %%
-# Jared's method
+# NB THIS IS QUITE SLOW
+cd_df.loc[:, 'date_payment_confirmed'] = cd_df['date_payment_confirmed'].apply(parse)
 
-
-# Sample DataFrame
-data = {'date_column': ['09/23', '10/22', '12/21']}
-df = pd.DataFrame(data)
-
-# Convert the 'date_column' to datetimedf['date_column'] = pd.to_datetime(df['date_column'], format='%m/%y')
-
-# Change the day to the last day of the monthdf['date_column'] = df['date_column'] + pd.offsets.MonthEnd()
-# Print the updated DataFrameprint(df)
 # %%
-cd_df['expiry_date']
+cd_df['date_payment_confirmed'] = pd.to_datetime(cd_df['date_payment_confirmed'], format='mixed', errors='coerce')
+
+# %%
+cd_df['card_provider'] = cd_df['card_provider'].astype('category')
+
+# %%
+cd_df
+# %%
+cd_df.info()
 # %%
