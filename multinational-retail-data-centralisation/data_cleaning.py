@@ -1,5 +1,4 @@
 # import re # is this still needed?
-# %%
 import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -136,59 +135,3 @@ class DataCleaning:
 # %%
 dc = DataCleaning()
 cleaned_card_data = dc.clean_card_data()
-# %%
-cleaned_card_data
-# %%
-
-cd_df = card_data
-
-# %%
-# clean card number data
-# remove rows where column headings were transferred over as data values
-mask_formatting_errors = cd_df['card_number'] == 'card_number'
-cd_df = cd_df[~mask_formatting_errors]
-
-# %%
-cd_df['card_number'].info()
-# %%
-# remove NaN values
-cd_df.dropna(subset = ['card_number'], inplace=True)
-# %%
-mask_null_values_in_card_number = cd_df['card_number'].isnull()
-cd_df = cd_df[~mask_null_values_in_card_number]
-
-
-# %%
-# remove all occurences of '?' in number strings
-cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
-
-# %%
-# this leaves the rows that are erroneous - mixed alphanumeric strings for every column
-# dropping rows containing strings with non-numeric characters
-cd_df = cd_df[cd_df["card_number"].str.isnumeric()]
-
-# %%
-
-cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
-
-# %%
-# convert the dates to datetime
-cd_df['expiry_date'] = cd_df['expiry_date'] + MonthEnd()
-
-# %%
-# NB THIS IS QUITE SLOW
-cd_df.loc[:, 'date_payment_confirmed'] = cd_df['date_payment_confirmed'].apply(parse)
-
-# %%
-cd_df['date_payment_confirmed'] = pd.to_datetime(cd_df['date_payment_confirmed'], format='mixed', errors='coerce')
-
-# %%
-cd_df['card_provider'] = cd_df['card_provider'].astype('category')
-
-# %%
-cd_df
-# %%
-cd_df.info()
-# %%
-cd_df.sort_values('date_payment_confirmed', ascending=False)
-# %%
