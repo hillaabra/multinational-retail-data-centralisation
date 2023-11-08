@@ -83,7 +83,10 @@ class DataCleaning:
         cd_df = cd_df[~mask_formatting_errors]
 
         # remove NaN values
-        cd_df.dropna(subset = ['card_number'], inplace=True)
+        # cd_df.dropna(subset = ['card_number'], inplace=True)  << this method was issuing a SettingWithCopyWarning
+
+        mask_null_values_in_card_number = cd_df['card_number'].isnull()
+        cd_df = cd_df[~mask_null_values_in_card_number]
 
         # remove all occurences of '?' in number strings
         cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
@@ -133,6 +136,8 @@ class DataCleaning:
 # %%
 dc = DataCleaning()
 cleaned_card_data = dc.clean_card_data()
+# %%
+cleaned_card_data
 # %%
 
 cd_df = card_data
