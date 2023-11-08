@@ -94,6 +94,7 @@ class DataCleaning:
 
         return cd_df
 
+    @staticmethod
     def convert_expiry_date_to_datetime(cd_df):
 
         cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
@@ -103,6 +104,7 @@ class DataCleaning:
 
         return cd_df
 
+    @staticmethod
     def convert_payment_confirmation_date_to_datetime(cd_df):
 
         cd_df.loc[:, 'date_payment_confirmed'] = cd_df['date_payment_confirmed'].apply(parse)
@@ -111,7 +113,7 @@ class DataCleaning:
 
         return cd_df
 
-    def clean_card_date(self):
+    def clean_card_data(self):
         # clean up card_number column, and remove NaN values
         cd_df = card_data.copy()
         cd_df = self.clean_card_number_data(cd_df)
@@ -127,6 +129,10 @@ class DataCleaning:
 
 # if __name__ == "__main__":
   #   cleaned_user_data = DataCleaning().clean_user_data()
+
+# %%
+dc = DataCleaning()
+cleaned_card_data = dc.clean_card_data()
 # %%
 
 cd_df = card_data
@@ -138,8 +144,14 @@ mask_formatting_errors = cd_df['card_number'] == 'card_number'
 cd_df = cd_df[~mask_formatting_errors]
 
 # %%
+cd_df['card_number'].info()
+# %%
 # remove NaN values
 cd_df.dropna(subset = ['card_number'], inplace=True)
+# %%
+mask_null_values_in_card_number = cd_df['card_number'].isnull()
+cd_df = cd_df[~mask_null_values_in_card_number]
+
 
 # %%
 # remove all occurences of '?' in number strings
@@ -172,4 +184,6 @@ cd_df['card_provider'] = cd_df['card_provider'].astype('category')
 cd_df
 # %%
 cd_df.info()
+# %%
+cd_df.sort_values('date_payment_confirmed', ascending=False)
 # %%
