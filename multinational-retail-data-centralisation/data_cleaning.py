@@ -87,6 +87,9 @@ class DataCleaning:
         mask_null_values_in_card_number = cd_df['card_number'].isnull()
         cd_df = cd_df[~mask_null_values_in_card_number]
 
+        # cast the column to a string dtype
+        cd_df['card_number'] = cd_df['card_number'].astype('string')
+
         # remove all occurences of '?' in number strings
         cd_df.loc[:, 'card_number'] = cd_df.card_number.apply(lambda x: x.replace('?', ''))
 
@@ -132,6 +135,5 @@ class DataCleaning:
 # if __name__ == "__main__":
   #   cleaned_user_data = DataCleaning().clean_user_data()
 
-# %%
-dc = DataCleaning()
-cleaned_card_data = dc.clean_card_data()
+# dc = DataCleaning()
+# cleaned_card_data = dc.clean_card_data()
