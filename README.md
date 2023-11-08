@@ -120,3 +120,61 @@ German phone number validation was harder.
 
 ### Issues I encountered:
 - I was trying to use subsets to replace erroneous values. I modified this by accessing the filtered data using .loc that combined a conditional filtering for the subset of data and a mask identifying the regex matches (or non-matches).
+
+## Cleaning card_data table
+
+### card_number column
+- Tabula processed the columns from the PDF as a string
+- I retrieved the values that contained non-numeric data types:
+```
+cd_df[~ cd_df["card_number"].str.isnumeric().fillna(False)]["card_number"].unique()
+```
+- This displayed:
+```
+<StringArray>
+[           'card_number',      '?4971858637664481',    '???3554954842403828',
+                     <NA>,             'VAB9DSB8ZM',             'MOZOT5Q95V',
+     '??4654492346226715',      '?3544855866042397',             'K0084A9R99',
+             'Y8ITI33X30',     '??2720312980409662',             'RNSCD8OCIM',
+        '??4982246481860',       '?213174667750869',   '????3505784569448924',
+   '????3556268655280464',    '???2604762576985106',             'MIK9G2EMM0',
+    '???5451311230288361',             'I4PWLWSIRJ',             'OMZSBN2XG3',
+             'NB8JJ05D7R', '???4252720361802860591',         '?4217347542710',
+          '?584541931351',    '???4672685148732305',     '??3535182016456604',
+   '?4222069242355461965',   '????3512756643215215',             'G0EF4TS8C8',
+      '?2314734659486501',    '????341935091733787',             'Z8855EXTJX',
+   '????3543745641013832',             'JQTLQAAQTD',             'T23BTBBJDD',
+         '??575421945446',         '??630466795154',     '????38922600092697',
+    '????344132437598598',    '???4814644393449676',             'LSWT9DT4G4']
+Length: 42, dtype: string
+```
+- This included:
+    - mixed letter and numeric strings
+    - card numbers with question marks in them
+    - `<NA>` values
+    - `card_number` values where the column headings (which were at the top of every page) had been erroneously entered as data values
+- I first removed the rows which had the column headings entered as data values - this was the majority of the outlying data for card_number
+- Then I removed the NaN values
+- This left me with string values only - now I removed all the '?' from the card numbers
+- I then check all the card number lengths were within range using `cd_df['card_number'].map(lambda x: len(x)).value_counts()`
+    - This showed card number lengths between 9 and 16, which are all valid lengths.
+    - I haven't yet checked that this left with me the valid lengths for each corresponding card_provider/card_type.
+
+### card_provider
+- Column values uploaded as object datatype
+- 10 unique values:
+```
+array(['Diners Club / Carte Blanche', 'American Express', 'JCB 16 digit',
+       'JCB 15 digit', 'Maestro', 'Mastercard', 'Discover',
+       'VISA 19 digit', 'VISA 16 digit', 'VISA 13 digit'], dtype=object)
+```
+- No accidental duplicates so converted the column values to category types
+- Consideration: after verifying the number of digits in the card number matches the number of digits in the subcategory, should I collapse the categories of "VISA 16", "VISA 19", etc into one category "VISA"? Chose not to for now
+
+
+### expiry_date & date_payment_confirmed columns
+- The expiry_date column values were in the format MM/YY, e,g, `'09/23'` for "September 2023". I converted this column to DateTime values that representing the date at the last day of the month (using panda.tseries.offset `MonthEnd`).
+    - QUERY: since this column is still in dtype `datetime64[ns]`, when it is imported to postgresql, it will import the expiry time at 00:00:00:00 on the last day of the month, i.e. 24 hours before the actual expiry time. How to handle this?
+- I used dateutil.parser parse the date_payment confirmed column before converting it to a datetime value.
+    - QUERY: as above, this column is still of dtype `datetime64[ns]` so will be imported to postgresql with time value os 00:00:00:00 - how to handle this?
+- All the expiry dates appear to be within range.
