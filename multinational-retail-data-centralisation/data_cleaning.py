@@ -1,9 +1,11 @@
+# %%
 # import re # is this still needed?
 import numpy as np
 import pandas as pd
-from pandas.tseries.offsets import MonthEnd
+# from pandas.tseries.offsets import MonthEnd
 from dateutil.parser import parse
-from  data_extraction import card_data, user_data, stores_data
+from data_extraction import extracted_products_data
+# %%
 
 
 class DataCleaning:
@@ -208,3 +210,8 @@ class DataCleaning:
 
         return sd_df
 
+# %%
+extracted_products_data.head()
+
+
+# %%
