@@ -1,9 +1,13 @@
-# import re # is this still needed?
+# %%
+import re # is this still needed?
+# %%
 import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 from dateutil.parser import parse
-from  data_extraction import card_data, user_data
+from  data_extraction import card_data, user_data, stores_data
+
+# %%
 
 class DataCleaning:
 
@@ -132,8 +136,79 @@ class DataCleaning:
 
         return cd_df
 
-# if __name__ == "__main__":
-  #   cleaned_user_data = DataCleaning().clean_user_data()
+    @staticmethod
+    def clean_stores_data():
 
-# dc = DataCleaning()
-# cleaned_card_data = dc.clean_card_data()
+        sd_df = stores_data.copy()
+
+        # index column not correctly handled in download
+        # from API, so dropping redundant column named 'index'
+        sd_df.drop('index', axis=1, inplace=True)
+
+        # dropping redundant 'lat' column that has no meaningful data (only  11 non-null values)
+        sd_df.drop('lat', axis=1, inplace=True)
+
+        # dropping columns where store_data is 'NULL' (all other column values also 'NULL')
+        mask_store_code_null = sd_df['store_code'] == 'NULL'
+        sd_df = sd_df[~mask_store_code_null]
+
+        # deleting all rows where the country_code isn't valid, since this correlates
+        # with the rows that have no meaningful values
+        mask_valid_country_codes = np.isin(sd_df['country_code'], ['GB', 'DE', 'US'])
+        sd_df = sd_df[mask_valid_country_codes]
+
+        # replacing mistyped continent values
+        continent_mapping_dict = {'eeEurope': 'Europe', 'eeAmerica': 'America'}
+        sd_df['continent'].replace(continent_mapping_dict, inplace=True)
+
+        # casting address, locality, store_code and (temporarily - for regex purposes) staff-numbers to strings
+        string_value_columns = ['address', 'locality', 'staff_numbers', 'store_code']
+
+        for column in string_value_columns:
+
+            sd_df[column] = sd_df[column].astype('string')
+
+        # converting longitude, latitude columns to float types
+        sd_df['longitude'] = pd.to_numeric(sd_df['longitude'], downcast='float', errors='coerce')
+        sd_df['latitude'] = pd.to_numeric(sd_df['latitude'], downcast='float', errors='coerce')
+
+        # removing typos (non-numerical) characters from staff_numbers field
+        sd_df['staff_numbers'] = sd_df.staff_numbers.str.replace(r'\D', '', regex=True)
+
+        # converting staff_numbers to integer type
+        sd_df['staff_numbers'] = pd.to_numeric(sd_df['staff_numbers'], downcast='integer', errors='raise') # no error should be raised at this point
+
+        # changing absent string values in Web Store record to None (values in numeric columns are set to NaN)
+        sd_df.at[0, 'address'] = None
+        sd_df.at[0, 'locality'] = None
+
+        # deleting rows where the store_code value is 'NULL' since these rows have no meaningful data
+        mask_store_code_nan = sd_df['store_code'] == 'NULL'
+        sd_df[mask_store_code_nan]
+
+        # casting the columns with a small range of concrete values to category types
+        category_column_types = ['store_type', 'country_code', 'continent']
+
+        for column in category_column_types:
+            sd_df[column] = sd_df[column].astype('category')
+
+
+        # manually replacing opening_date values that have outlying formats (majority are presented in ISO time)
+        opening_date_mapping_dict = {'October 2012 08': '2012-10-08',
+                                     'July 2015 14': '2015-07-14',
+                                     '2020 February 01': '2020-02-01',
+                                     'May 2003 27': '2003-05-27',
+                                     '2016 November 25': '2016-11-25',
+                                     'October 2006 04': '2006-10-04',
+                                     '2001 May 04': '2001-05-04',
+                                     '1994 November 24': '1994-11-24',
+                                     'February 2009 28': '2009-02-28',
+                                     'March 2015 02': '2015-03-02'}
+
+        sd_df['opening_date'].replace(opening_date_mapping_dict, inplace=True)
+
+        # casting the opening_date column to datetime
+        sd_df['opening_date'] = pd.to_datetime(sd_df['opening_date'], format='mixed', errors='raise') # no errors should be raised at this stage
+
+        return sd_df
+
