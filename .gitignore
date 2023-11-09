@@ -3,3 +3,4 @@ __pycache__/
 
 multinational-retail-data-centralisation/db_creds.yaml
 multinational-retail-data-centralisation/local_db_creds.yaml
+multinational-retail-data-centralisation/.secret/
