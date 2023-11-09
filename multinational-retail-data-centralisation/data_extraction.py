@@ -95,4 +95,4 @@ pdf_link = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details
 card_data = de.retrieve_pdf_data(pdf_link)
 
 # Use the retrieve_stores_data method to extract the store data from the API and return it as a dataframe
-store_data = de.retrieve_stores_data("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/")
+stores_data = de.retrieve_stores_data("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/")
