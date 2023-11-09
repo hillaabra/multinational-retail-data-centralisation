@@ -103,3 +103,12 @@ class DataExtractor:
     products_df = pd.read_csv(file_name)
 
     return products_df
+    # also write code to remove csv file from project repo?
+
+data_extractor = DataExtractor()
+conn = DatabaseConnector()
+
+extracted_card_data = data_extractor.retrieve_pdf_data("https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf")
+extracted_user_data = data_extractor.read_rds_table(conn, 'legacy_users')
+extracted_stores_data = data_extractor.retrieve_stores_data("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/")
+extracted_products_data = data_extractor.extract_from_s3("s3://data-handling-public/products.csv")
