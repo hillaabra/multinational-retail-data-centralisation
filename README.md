@@ -1,8 +1,9 @@
 # multinational-retail-data-centralisation
 
-## Tracking my progress.
+## Tracking progress:
 
-6th Nov: data cleaning
+## Cleaning user_data table
+
 
 - I started by importing the user_data variable from my data_extraction module - this contains the pandas dataframe to be cleaned.
 - I examined the table.
@@ -178,3 +179,67 @@ array(['Diners Club / Carte Blanche', 'American Express', 'JCB 16 digit',
 - I used dateutil.parser parse the date_payment confirmed column before converting it to a datetime value.
     - QUERY: as above, this column is still of dtype `datetime64[ns]` so will be imported to postgresql with time value os 00:00:00:00 - how to handle this?
 - All the expiry dates appear to be within range.
+
+
+## Cleaning stores_data dataframe:
+
+- Dropped 'lat' column after running:
+```
+sd_df[['lat', 'latitude']]
+sd_df['lat'].unique()
+```
+The only values in 'lat' were:
+```
+array(['N/A', None, '13KJZ890JH', '2XE1OWOC23', 'NULL', 'OXVE5QR07O',
+       'VKA5I8H32X', 'LACCWDI0SB', 'A3O5CBWAMD', 'UXMWDMX1LC'],
+      dtype=object)
+```
+- Note that for the Web Portal store, the latitude value is "None" (registered as null), while longitude is represented by the string 'N/A'
+
+- Checked continents and country codes all matched up after cleaning those values by running
+```
+sd_df[sd_df['country_code'] == 'US']['continent'].unique()
+sd_df[sd_df['country_code'] == 'DE']['continent'].unique()
+sd_df[sd_df['country_code'] == 'GB']['continent'].unique()
+```
+
+- How I identified the outlying 'opening_date' formats", before attempting to cast the date to datetime:
+
+```
+sd_df.opening_date.map(lambda x: len(x)).value_counts()
+```
+- This displayed:
+```
+opening_date
+10    431
+16      4
+15      2
+11      2
+12      1
+13      1
+Name: count, dtype: int64
+```
+- Most likely that 431 majority are in the ISO format (10 characters make up 'YYYY-MM-DD')
+- 10 entries in this column are of other lengths. It was fiddly to identify which these were. Eventually I got there using:
+
+```
+outlying_opening_date_values = sd_df.opening_date.map(lambda x: len(x))
+mask_outlying_opening_date_values = outlying_opening_date_values != 10
+sd_df.loc[:, 'opening_date'][mask_outlying_opening_date_values]
+```
+- This displayed:
+```
+10      October 2012 08
+11         July 2015 14
+122    2020 February 01
+143         May 2003 27
+190    2016 November 25
+242     October 2006 04
+292         2001 May 04
+340    1994 November 24
+369    February 2009 28
+394       March 2015 02
+Name: opening_date, dtype: object
+```
+
+- It seemed more straightforward to map these 10 outlying values manually before parsing the date values from the column using a pandas or dateutil method. / these are all dates so maybe they'll be parsed?
