@@ -1,5 +1,6 @@
 # %%
-# import re # is this still needed?
+import re
+# %%
 import numpy as np
 import pandas as pd
 # from pandas.tseries.offsets import MonthEnd
@@ -211,8 +212,70 @@ class DataCleaning:
 
         return sd_df
 
-# %%
-extracted_products_data.head()
+    # method to convert product weights
+    # it should take the products dataframe as an argument and return the products dataframe
+    @staticmethod
+    def convert_product_weights(pd_df):
+
+        def convert_weight_to_kg_float(weight_str):
+            # first catchs the strings in the format'{num1} x {num2}g'
+            if re.fullmatch(r'\d+\s*x\s*\d+\.?\d*g', weight_str):
+                # splits the string along the 'x' into a list of two string values
+                nums = weight_str.split(' x ')
+                # remove anything that is not a numeric digit or decimal place
+                nums[1] = re.sub(r'[^\d\.]', '', nums[1])
+                return round((float(nums[0])*float(nums[1]))/1000, 2)
+            # then for values already entered as 'kg'
+            elif re.search('kg', weight_str):
+                weight_str = re.sub(r'[^\d\.]', '', weight_str)
+                return round(float(weight_str), 2)
+            # then for values entered in grams ('g') or ml (for ml, using 1:1 conversion ratio)
+            elif re.search(r'g|(ml)', weight_str):
+                weight_str = re.sub(r'[^\d\.]', '', weight_str)
+                return round((float(weight_str)/1000), 2)
+            # then for values entered in ounces ('oz')
+            elif re.search('oz', weight_str):
+                weight_str = re.sub(r'[^\d\.]', '', weight_str)
+                return round((float(weight_str)*0.02834952), 2)
+            # catching exceptions
+            else:
+                print(f"Error: The unit measurement of {weight_str} was not accounted for in convert_product_weight_to_kg_function")
+                return weight_str
+
+        pd_df['weight'] = pd_df['weight'].apply(convert_weight_to_kg_float)
+
+        return pd_df
+
+    # method to clean product data
+    def clean_products_data(self):
+
+        pd_df = extracted_products_data.copy()
+
+        # remove rows with NaN values in 'weight' - these rows have no meaningful data
+        mask_weight_values_nan = pd_df['weight'].isna()
+        pd_df = pd_df[~mask_weight_values_nan]
+
+        # removes rows with numeric characters in the category field
+        # every column in these rows are filled with meaningless alphanumeric strings
+        mask_category_with_digits = pd_df['category'].str.contains(pat=r'[0-9]', regex=True)
+        pd_df = pd_df[~mask_category_with_digits]
+
+        # convert the weight column values
+        pd_df = self.convert_product_weights(pd_df)
+
+
+        return pd_df
 
 
 # %%
+data_cleaner = DataCleaning()
+test_pd_df = data_cleaner.clean_products_data()
+# %%
+test_pd_df.info()
+# %%
+# mask_pd_df_with_non_alphanumeric_chars = pd_df['weight'].str.contains(pat=r'[^0-9\.kgml]', regex=True)
+# pd_df[mask_pd_df_with_non_alphanumeric_chars]
+# showed that there are multipacks being represented as '2 x 200g' for e.g. 'Fudge 400g'
+# %%
+
+
