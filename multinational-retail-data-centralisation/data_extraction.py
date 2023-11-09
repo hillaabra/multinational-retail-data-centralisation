@@ -1,10 +1,16 @@
 import json
 import pandas as pd
 import requests
+# %%
+
+import boto3
+from botocore.exceptions import NoCredentialsError, ClientError, ParamValidationError # might not be needed
+# %%
 import sqlalchemy
 import tabula
 from database_utils import DatabaseConnector
 
+# %%
 class DataExtractor:
 
   # Method to extract database table to a pandas DataFrame, which it returns
@@ -82,17 +88,18 @@ class DataExtractor:
 
     return df_store_data
 
+  # Method to extract products data from csv S3 storage, takes in S3 address ("s3://data-handling-public/products.csv") as an argument, returns pandas dataframe
+  @staticmethod
+  def extract_from_s3(s3_uri):
 
+    s3_path_parts = s3_uri.split('://')[1].split('/')
+    bucket_name = s3_path_parts[0]
+    object_name = s3_path_parts[1]
+    file_name = object_name
 
-de = DataExtractor()
-dc = DatabaseConnector()
+    s3 = boto3.client('s3')
+    s3.download_file(bucket_name, object_name, file_name)
 
-# Use the read_rds_table method to extract the table containing user data and return a pandas DataFrame
-user_data = de.read_rds_table(dc, 'legacy_users')
+    products_df = pd.read_csv(file_name)
 
-# Use the retrieve_pdf_data method to extract the table containing card_data from the pdf link
-pdf_link = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
-card_data = de.retrieve_pdf_data(pdf_link)
-
-# Use the retrieve_stores_data method to extract the store data from the API and return it as a dataframe
-stores_data = de.retrieve_stores_data("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/")
+    return products_df
