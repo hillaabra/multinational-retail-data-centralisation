@@ -100,7 +100,7 @@ class DataExtractor:
     s3 = boto3.client('s3')
     s3.download_file(bucket_name, object_name, file_name)
 
-    products_df = pd.read_csv(file_name)
+    products_df = pd.read_csv(file_name, index_col=[0])
 
     return products_df
     # also write code to remove csv file from project repo?
