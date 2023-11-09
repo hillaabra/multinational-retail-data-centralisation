@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 # from pandas.tseries.offsets import MonthEnd
 from dateutil.parser import parse
-from data_extraction import extracted_products_data
+# %%
+from data_extraction import extracted_card_data, extracted_products_data, extracted_stores_data, extracted_user_data
 # %%
 
 
@@ -15,7 +16,7 @@ class DataCleaning:
     @staticmethod
     def clean_user_data():
 
-        ud_df = user_data.copy()
+        ud_df = extracted_user_data.copy()
 
         # Based on tests done on copied dataframe, I want to:
 
@@ -122,7 +123,7 @@ class DataCleaning:
 
     def clean_card_data(self):
         # clean up card_number column, and remove NaN values
-        cd_df = card_data.copy()
+        cd_df = extracted_card_data.copy()
         cd_df = self.clean_card_number_data(cd_df)
 
         # convert date columns to datetime
@@ -137,7 +138,7 @@ class DataCleaning:
     @staticmethod
     def clean_stores_data():
 
-        sd_df = stores_data.copy()
+        sd_df = extracted_stores_data.copy()
 
         # index column not correctly handled in download
         # from API, so dropping redundant column named 'index'
