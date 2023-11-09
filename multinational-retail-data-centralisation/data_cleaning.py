@@ -1,13 +1,10 @@
-# %%
-import re # is this still needed?
-# %%
+# import re # is this still needed?
 import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 from dateutil.parser import parse
 from  data_extraction import card_data, user_data, stores_data
 
-# %%
 
 class DataCleaning:
 
@@ -77,7 +74,6 @@ class DataCleaning:
         # make phone_number uniform: UK numbers, German numbers, US numbers - for later if there's time
 
         return ud_df
-
 
     @staticmethod
     def clean_card_number_data(cd_df):
