@@ -243,3 +243,5 @@ Name: opening_date, dtype: object
 ```
 
 - It seemed more straightforward to map these 10 outlying values manually before parsing the date values from the column using a pandas or dateutil method. / these are all dates so maybe they'll be parsed?
+
+- checked that the store_code value was unique - it was
