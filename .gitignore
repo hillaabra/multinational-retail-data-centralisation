@@ -4,3 +4,4 @@ __pycache__/
 multinational-retail-data-centralisation/db_creds.yaml
 multinational-retail-data-centralisation/local_db_creds.yaml
 multinational-retail-data-centralisation/.secret/
+multinational-retail-data-centralisation/products.csv
