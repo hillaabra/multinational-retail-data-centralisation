@@ -60,14 +60,4 @@ class DatabaseConnector:
       engine.dispose()
 
 
-# engine = test.init_db_engine()
-# inspector = inspect(engine)
-# result = inspector.get_table_names()
-# print(result)
-
-#if __name__ == "__main__":
- # test = DatabaseConnector()
-  #result = test.list_db_tables()
-  #print(result)
-
 
