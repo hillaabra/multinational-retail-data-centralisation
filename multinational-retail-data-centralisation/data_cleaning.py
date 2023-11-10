@@ -286,5 +286,16 @@ class DataCleaning:
     # method
     @staticmethod
     def clean_orders_data():
-        orders_df = extract_orders_data_for_cleaning()
+
+        od_df = extract_orders_data_for_cleaning()
+
+        od_df.drop(columns=['first_name', 'last_name', '1'], inplace=True)
+
+        for column in ['date_uuid', 'user_uuid', 'card_number', 'store_code', 'product_code']:
+            od_df[column] = od_df[column].astype('string')
+
+        for column in ['level_0', 'index', 'product_quantity']:
+            od_df[column] = pd.to_numeric(od_df[column], downcast='integer', errors='raise')
+
+        return od_df
 
