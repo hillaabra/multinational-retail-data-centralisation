@@ -245,3 +245,42 @@ Name: opening_date, dtype: object
 - It seemed more straightforward to map these 10 outlying values manually before parsing the date values from the column using a pandas or dateutil method. / these are all dates so maybe they'll be parsed?
 
 - checked that the store_code value was unique - it was
+
+
+## DataCleaning of products data
+### product_weight:
+### product_price:
+- In case of mixed values:
+```
+pd_df['product_price'].apply(type).value_counts()
+```
+This showed that all entries were of class `'str'`.
+- Checked all prices were in pounds sterling by returning a view of the dataframe that was sorted alphabetically according to the product_price column. This showed all value strings started with a £ sign.
+- I also ran a quick check to see the length of those strings, and they were majority lengths of 5 and 6, with a only 6 outliers that were of length 7.
+- I viewed the product data for this handful of items whose product_price value was a string of a 7 character length:
+```
+mask = pd_df['product_price'].apply(lambda x: len(x)) == 7
+pd_df[mask]
+```
+These were confirmed as appropriately priced premium items.
+
+### date_added
+```
+mask = pd_df['date_added'].apply(lambda x: re.match(r'\d{4}\-\d{2}\-\d{2}', x)).apply(lambda x: True if x == None else False)
+pd_df[mask]
+```
+- returned only two dates, so I could assume all dates were either in YYYY-MM-DD or YYYY-DD-MM.
+
+## Data extraction
+- Using tabula to retrieve from PDF
+- Using requests and JSON libraries to request and retrieve from API with authentication details in header
+    - Employed a loop to retrieve stores data from the response to each query (0 to 450) in the endpoint and loaded it into pandas dataframe using concatenate method.
+    - Go back to fix indexing issue with concatenate - but in the meantime, I just dropped the extra index column in the data cleaning part.
+    - Is there a faster method than using concatenate with a loop?
+- Using SQLAlchemy to retrieve from AWS RDS database
+- Using boto3 to downloaxd and extract from S3.
+
+- Include YAML of conda environment at end?
+
+## Import and file structure
+- need to figure out where to do the file extraction etc. - import just the files or the methods?
