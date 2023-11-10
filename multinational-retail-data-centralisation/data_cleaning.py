@@ -289,7 +289,7 @@ class DataCleaning:
 
         od_df = extract_orders_data_for_cleaning()
 
-        od_df.set_index('level_0')
+        od_df.set_index('level_0', inplace=True)
 
         od_df.drop(columns=['first_name', 'last_name', '1'], inplace=True)
 

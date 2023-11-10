@@ -106,6 +106,15 @@ class DataExtractor:
 
     return products_df
     # also write code to remove csv file from project repo?
+
+  # method to return a dataframe from a public JSON URL (to be used for events date data)
+  @staticmethod
+  def extract_data_from_json_url(json_url):
+
+    df = pd.read_json(json_url)
+
+    return df
+
 # %%
 data_extractor = DataExtractor()
 conn = DatabaseConnector()
@@ -131,3 +140,10 @@ def extract_products_data_for_cleaning():
 def extract_orders_data_for_cleaning():
   extracted_orders_data = data_extractor.read_rds_table(conn, 'orders_table')
   return extracted_orders_data
+
+# %%
+def extract_dates_event_data_for_cleaning():
+  extracted_dates_event_data = data_extractor.extract_data_from_json_url('https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json')
+  return extracted_dates_event_data
+
+# %%
