@@ -25,3 +25,6 @@ if __name__ == "__main__":
 
   cleaned_orders_data = data_cleaner.clean_orders_data()
   conn.upload_to_db(cleaned_orders_data, 'orders_table')
+
+  cleaned_dates_event_data = data_cleaner.clean_date_events_data()
+  conn.upload_to_db(cleaned_dates_event_data, 'dim_date_times')
