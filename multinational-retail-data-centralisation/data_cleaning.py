@@ -6,7 +6,8 @@ import pandas as pd
 # from pandas.tseries.offsets import MonthEnd
 from dateutil.parser import parse
 # %%
-from data_extraction import extracted_card_data, extracted_products_data, extracted_stores_data, extracted_user_data
+from data_extraction import extracted_products_data
+# from data_extraction import extracted_card_data, extracted_products_data, extracted_stores_data, extracted_user_data
 # %%
 
 
@@ -244,6 +245,9 @@ class DataCleaning:
 
         pd_df['weight'] = pd_df['weight'].apply(convert_weight_to_kg_float)
 
+        #already cast to float, but reducing float type down to maximum bits needed
+        pd_df['weight'] = pd.to_numeric(pd_df['weight'], downcast='float', errors='raise')
+
         return pd_df
 
     # method to clean product data
@@ -260,22 +264,26 @@ class DataCleaning:
         mask_category_with_digits = pd_df['category'].str.contains(pat=r'[0-9]', regex=True)
         pd_df = pd_df[~mask_category_with_digits]
 
-        # convert the weight column values
+        # convert the weight column values to a float32 type
+        # values have been rounded to 2 decimal places
         pd_df = self.convert_product_weights(pd_df)
 
+        # convert 'product_name', 'EAN', 'product_code' and 'uuid' columns to string type
+        string_value_columns = ['product_name', 'EAN', 'product_code','uuid']
+        for column in string_value_columns:
+            pd_df[column] = pd_df[column].astype('string')
+
+        # convert product_price to a float32 type
+        pd_df['product_price'] = pd_df['product_price'].apply(lambda x: re.sub(r'^£', '', x)).astype('float32')
+
+        # category type columns
+        pd_df['category'] = pd_df['category'].astype('category')
+        pd_df['removed'] = pd_df['removed'].astype('category')
+
+        # date_added tp datetime
+        pd_df['date_added'] = pd_df['date_added'].apply(parse)
+        pd_df['date_added'] = pd.to_datetime(pd_df['date_added'], format='%Y-%m-%d', errors='raise') # there should be no errors
 
         return pd_df
-
-
-# %%
-data_cleaner = DataCleaning()
-test_pd_df = data_cleaner.clean_products_data()
-# %%
-test_pd_df.info()
-# %%
-# mask_pd_df_with_non_alphanumeric_chars = pd_df['weight'].str.contains(pat=r'[^0-9\.kgml]', regex=True)
-# pd_df[mask_pd_df_with_non_alphanumeric_chars]
-# showed that there are multipacks being represented as '2 x 200g' for e.g. 'Fudge 400g'
-# %%
 
 
