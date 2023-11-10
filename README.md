@@ -271,6 +271,17 @@ pd_df[mask]
 ```
 - returned only two dates, so I could assume all dates were either in YYYY-MM-DD or YYYY-DD-MM.
 
+## Clean stores_data
+-Question about index columns - there were two - but they weren't the same, so I kept both in case they both had a use for some reason.
+- Dropped null columns
+- cast columns to string datatypes for the id and reference values, and to lower integer types for the integer values
+
+## Clean date events data
+- Removed rows of null and meaningless values by using a mask to filtering for rows that fit to one of the 'time_period' categories, then setting the dateframe to this mask
+- Casted the 'time_period' column to a category type
+- Casted the date_uuid column to a string type
+- Replaced the 'timestamp', 'year', 'month' and 'day' columns with one column that aggregated these, cast to datetime64[s] type
+
 ## Data extraction
 - Using tabula to retrieve from PDF
 - Using requests and JSON libraries to request and retrieve from API with authentication details in header
