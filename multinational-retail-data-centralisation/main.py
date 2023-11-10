@@ -22,3 +22,6 @@ if __name__ == "__main__":
 
   cleaned_products_data = data_cleaner.clean_products_data()
   conn.upload_to_db(cleaned_products_data, 'dim_products')
+
+  cleaned_orders_data = data_cleaner.clean_orders_data()
+  conn.upload_to_db(cleaned_orders_data, 'orders_table')
