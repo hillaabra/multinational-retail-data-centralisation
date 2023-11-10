@@ -4,9 +4,8 @@ import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 from dateutil.parser import parse
-from data_extraction import extract_card_data_for_cleaning, extract_orders_data_for_cleaning, extract_products_data_for_cleaning, extract_stores_data_for_cleaning, extract_user_data_for_cleaning
+from data_extraction import extract_card_data_for_cleaning, extract_dates_event_data_for_cleaning, extract_orders_data_for_cleaning, extract_products_data_for_cleaning, extract_stores_data_for_cleaning, extract_user_data_for_cleaning
 # %%
-
 
 class DataCleaning:
 
@@ -300,4 +299,22 @@ class DataCleaning:
             od_df[column] = pd.to_numeric(od_df[column], downcast='integer', errors='raise')
 
         return od_df
+
+    @staticmethod
+    def clean_date_events_data():
+
+        de_df = extract_dates_event_data_for_cleaning()
+
+        mask_time_period_valid = de_df["time_period"].isin(['Evening', 'Morning', 'Midday', 'Late_Hours'])
+        de_df = de_df[mask_time_period_valid]
+
+        de_df['time_period'] = de_df['time_period'].astype('category')
+
+        de_df['date_uuid'] = de_df['date_uuid'].astype('string')
+
+        de_df['timestamp'] = (de_df[['year', 'month', 'day']].agg('-'.join, axis=1) + ' ' + de_df['timestamp']).astype('datetime64[s]')
+        de_df.rename(columns={'timestamp': 'datetime'}, inplace=True)
+        de_df.drop(['month', 'year', 'day'], axis=1, inplace=True)
+
+        return de_df
 
