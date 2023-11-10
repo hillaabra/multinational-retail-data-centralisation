@@ -1,13 +1,10 @@
 # %%
 import re
-# %%
 import numpy as np
 import pandas as pd
-# from pandas.tseries.offsets import MonthEnd
+from pandas.tseries.offsets import MonthEnd
 from dateutil.parser import parse
-# %%
-from data_extraction import extracted_products_data
-# from data_extraction import extracted_card_data, extracted_products_data, extracted_stores_data, extracted_user_data
+from data_extraction import extract_card_data_for_cleaning, extract_orders_data_for_cleaning, extract_products_data_for_cleaning, extract_stores_data_for_cleaning, extract_user_data_for_cleaning
 # %%
 
 
@@ -18,7 +15,7 @@ class DataCleaning:
     @staticmethod
     def clean_user_data():
 
-        ud_df = extracted_user_data.copy()
+        ud_df = extract_user_data_for_cleaning()
 
         # Based on tests done on copied dataframe, I want to:
 
@@ -125,7 +122,7 @@ class DataCleaning:
 
     def clean_card_data(self):
         # clean up card_number column, and remove NaN values
-        cd_df = extracted_card_data.copy()
+        cd_df = extract_card_data_for_cleaning()
         cd_df = self.clean_card_number_data(cd_df)
 
         # convert date columns to datetime
@@ -140,7 +137,7 @@ class DataCleaning:
     @staticmethod
     def clean_stores_data():
 
-        sd_df = extracted_stores_data.copy()
+        sd_df = extract_stores_data_for_cleaning()
 
         # index column not correctly handled in download
         # from API, so dropping redundant column named 'index'
@@ -253,7 +250,7 @@ class DataCleaning:
     # method to clean product data
     def clean_products_data(self):
 
-        pd_df = extracted_products_data.copy()
+        pd_df = extract_products_data_for_cleaning()
 
         # remove rows with NaN values in 'weight' - these rows have no meaningful data
         mask_weight_values_nan = pd_df['weight'].isna()
@@ -286,4 +283,8 @@ class DataCleaning:
 
         return pd_df
 
+    # method
+    @staticmethod
+    def clean_orders_data():
+        orders_df = extract_orders_data_for_cleaning()
 

@@ -106,19 +106,28 @@ class DataExtractor:
 
     return products_df
     # also write code to remove csv file from project repo?
-
 # %%
 data_extractor = DataExtractor()
 conn = DatabaseConnector()
 
-# %%
-extracted_card_data = data_extractor.retrieve_pdf_data("https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf")
-extracted_user_data = data_extractor.read_rds_table(conn, 'legacy_users')
-extracted_stores_data = data_extractor.retrieve_stores_data("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/")
-extracted_products_data = data_extractor.extract_from_s3("s3://data-handling-public/products.csv")
+def extract_card_data_for_cleaning():
+  extracted_card_data = data_extractor.retrieve_pdf_data("https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf")
+  return extracted_card_data
 
-# %%
-conn.list_db_tables()
-# %%
-extracted_orders_data = data_extractor.read_rds_table(conn, 'orders_table')
-# %%
+def extract_user_data_for_cleaning():
+  extracted_user_data = data_extractor.read_rds_table(conn, 'legacy_users')
+  return extracted_user_data
+
+def extract_stores_data_for_cleaning():
+  extracted_stores_data = data_extractor.retrieve_stores_data("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/")
+  return extracted_stores_data
+
+def extract_products_data_for_cleaning():
+  extracted_products_data = data_extractor.extract_from_s3("s3://data-handling-public/products.csv")
+  return extracted_products_data
+
+# conn.list_db_tables()
+
+def extract_orders_data_for_cleaning():
+  extracted_orders_data = data_extractor.read_rds_table(conn, 'orders_table')
+  return extracted_orders_data
