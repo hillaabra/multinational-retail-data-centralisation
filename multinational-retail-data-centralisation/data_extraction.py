@@ -1,12 +1,12 @@
 # %%
 import json
-import pandas as pd
+import os.path
 import requests
 # %%
 
 import boto3
-from botocore.exceptions import NoCredentialsError, ClientError, ParamValidationError # might not be needed
-# %%
+from botocore.exceptions import ClientError # might not be needed
+import pandas as pd
 import sqlalchemy
 import tabula
 # %%
@@ -99,13 +99,27 @@ class DataExtractor:
     object_name = s3_path_parts[1]
     file_name = object_name
 
-    s3 = boto3.client('s3')
-    s3.download_file(bucket_name, object_name, file_name)
+    if os.path.isfile(file_name):
+        os.remove(file_name)
 
-    products_df = pd.read_csv(file_name, index_col=[0])
+    try:
 
-    return products_df
-    # also write code to remove csv file from project repo?
+      s3 = boto3.client('s3')
+      s3.download_file(bucket_name, object_name, file_name)
+      products_df = pd.read_csv(file_name, index_col=[0])
+      # also write code to remove csv file from project repo?
+      return products_df
+
+    except ClientError as e:
+
+      if e.response['Error']['Code'] == 'NoSuchBucket':
+        print('The specified bucket does not exist.')
+      elif e.response['Error']['Code'] == 'NoSuchKey':
+        print('The specified key does not exist.')
+      else:
+        print(f"{e.response['Error']['Code']}\n{e.response['Error']['Message']}")
+
+
 
   # method to return a dataframe from a public JSON URL (to be used for events date data)
   @staticmethod
