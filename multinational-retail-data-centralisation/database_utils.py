@@ -12,7 +12,7 @@ class DatabaseConnector:
       return dict_db_creds
 
     # Method to read the credentials from the return of read_db_creds and initialise and return an sqlalchemy database engine
-    def init_db_engine(self):
+    def init_remote_db_engine(self):
 
       dict_db_creds = self.read_db_creds('.credentials/remote_db_creds.yaml')
 
@@ -29,7 +29,7 @@ class DatabaseConnector:
 
     # method to list all the tables in the database so you know which tables you can extract data from
     def list_db_tables(self):
-      engine = self.init_db_engine()
+      engine = self.init_remote_db_engine()
       inspector = inspect(engine)
       table_names = inspector.get_table_names()
       return table_names
@@ -52,7 +52,7 @@ class DatabaseConnector:
       return engine
 
     # method that takes in a Pandas DataFrame and table name to upload to as an argument
-    def upload_to_db(self, pd_df, table_name):
+    def upload_to_local_db(self, pd_df, table_name):
       engine = self.init_local_db_engine()
       engine.execution_options(isolation_level='AUTOCOMMIT').connect()
       pd_df.to_sql(table_name, engine, if_exists='replace')
