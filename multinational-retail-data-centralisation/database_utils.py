@@ -1,4 +1,3 @@
-
 import psycopg2
 import yaml
 from sqlalchemy import create_engine, inspect
@@ -15,7 +14,7 @@ class DatabaseConnector:
     # Method to read the credentials from the return of read_db_creds and initialise and return an sqlalchemy database engine
     def init_db_engine(self):
 
-      dict_db_creds = self.read_db_creds('db_creds.yaml')
+      dict_db_creds = self.read_db_creds('.credentials/remote_db_creds.yaml')
 
       conf = {
         'HOST': dict_db_creds['RDS_HOST'],
@@ -38,7 +37,7 @@ class DatabaseConnector:
     # method to connect to local pgadmin database
     def init_local_db_engine(self):
 
-      dict_db_creds = self.read_db_creds('local_db_creds.yaml')
+      dict_db_creds = self.read_db_creds('.credentials/local_db_creds.yaml')
 
       DATABASE_TYPE = dict_db_creds['DATABASE_TYPE']
       DBAPI = dict_db_creds['DBAPI']

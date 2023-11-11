@@ -36,7 +36,7 @@ class DataExtractor:
 
   @staticmethod
   def retrieve_api_authorisation():
-    with open('.secret/config.json', 'r') as read_file:
+    with open('.credentials/api_config.json', 'r') as read_file:
       header_dict = json.load(read_file)
 
     return header_dict
