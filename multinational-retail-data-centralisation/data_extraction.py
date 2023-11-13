@@ -1,163 +1,158 @@
-# %%
 import json
 import os.path
 import requests
-# %%
 
 import boto3
-from botocore.exceptions import ClientError # might not be needed
+from botocore.exceptions import ClientError
 import pandas as pd
 import sqlalchemy
 import tabula
-# %%
+
 from database_utils import DatabaseConnector
 
-# %%
+
 class DataExtractor:
 
-  # Method to extract database table to a pandas DataFrame, which it returns
-  # Takes an instance of the DatabaseConnector class and the table name as an argument
-  @staticmethod
-  def read_rds_table(instance, table_name):
-    engine = instance.init_db_engine()
-    engine.connect()
-    pd_df = pd.read_sql_table(table_name, engine)
-    engine.dispose()
-    return pd_df
+    def __init__(self, source_type, source_location, extracted_data=None):
 
-  # method to extract data from a pdf document. takes link as argument. extracts all pages.
-  # returns dataframe of extracted data
-  @staticmethod
-  def retrieve_pdf_data(link):
+        self.source_type = source_type # e.g. pdf, JSON, RDS, S3 resource etc...
+        self.source_location = source_location # this could be the name of the table (e.g. orders_table for RDS resource)
+        self.extracted_data = extracted_data    # or the URI or URL or filepath etc...  (call this source_id instead?)
 
-    dfs = tabula.read_pdf(link, lattice=True, pages='all', multiple_tables=False)[0]
+    def extract_data(self):
+    # play around with this.... maybe best to categorise by location first then type...
+        if self.source_type == 'pdf':
+            df = self._retrieve_pdf_data(self.source_location)
+        elif self.source_type == 'JSON':
+            df = self._extract_data_from_json_url(self.source_location)
+        elif self.source_type == 'AWS_RDS_resource':
+            conn = DatabaseConnector()
+            df = self._read_rds_table(conn, self.source_location)
+        elif self.source_type == 'S3_resource':
+            df = self._extract_from_s3(self.source_location)
+        elif self.source_type == 'api_resource':
+            df = self._retrieve_stores_data(self.source_location)
+        self.extracted_data = df
+        return df
 
-    return dfs
+    @staticmethod
+    def _retrieve_pdf_data(link):
 
-  @staticmethod
-  def retrieve_api_authorisation():
-    with open('.credentials/api_config.json', 'r') as read_file:
-      header_dict = json.load(read_file)
+      df = tabula.read_pdf(link, lattice=True, pages='all', multiple_tables=False)[0]
 
-    return header_dict
+      return df
 
-  # method to return the number of stores to extract from API
-  def list_number_of_stores(self, endpoint, header_dict):
+    @staticmethod
+    def _extract_data_from_json_url(json_url):
 
-    response = requests.get(endpoint, headers=header_dict)
+        df = pd.read_json(json_url)
 
-    if response.status_code == 200:
+        return df
 
-      return response
+    @staticmethod
+    def _read_rds_table(instance, table_name):
+      engine = instance.init_remote_db_engine()
+      engine.connect()
+      pd_df = pd.read_sql_table(table_name, engine)
+      engine.dispose()
+      return pd_df
 
-    else:
+    @staticmethod
+    def _extract_from_s3(s3_uri):
 
-      print(response.status_code)
+      s3_path_parts = s3_uri.split('://')[1].split('/')
+      bucket_name = s3_path_parts[0]
+      object_name = s3_path_parts[1]
+      file_name = object_name
 
-  # method to retrieve store data from API and return it in a dataframe
-  def retrieve_stores_data(self, endpoint):
+      if os.path.isfile(file_name):
+          os.remove(file_name)
 
-    header_dict = self.retrieve_api_authorisation()
+      try:
 
-    num_of_stores_response = self.list_number_of_stores("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores", header_dict)
-    num_of_stores = num_of_stores_response.json()['number_stores']
+        s3 = boto3.client('s3')
+        s3.download_file(bucket_name, object_name, file_name)
+        products_df = pd.read_csv(file_name, index_col=[0])
+        # also write code to remove csv file from project repo?
+        return products_df
 
-    response = requests.get(f"{endpoint}0", headers=header_dict)
+      except ClientError as e:
 
-    if response.status_code == 200:
+        if e.response['Error']['Code'] == 'NoSuchBucket':
+          print('The specified bucket does not exist.')
+        elif e.response['Error']['Code'] == 'NoSuchKey':
+          print('The specified key does not exist.')
+        else:
+          print(f"{e.response['Error']['Code']}\n{e.response['Error']['Message']}")
 
-      store_data = response.json()
-      df_store_data = pd.DataFrame([store_data])
-      df_store_data.set_index('index', inplace=True)
+    @staticmethod
+    def __retrieve_api_authorisation():
 
-    else:
+      with open('.credentials/api_config.json', 'r') as read_file:
 
-      print(response.status_code)
+        header_dict = json.load(read_file)
 
-    for i in range(1, num_of_stores):
+      return header_dict
 
-      response = requests.get(f"{endpoint}{i}", headers=header_dict)
+    # method to return the number of stores to extract from API
+    @staticmethod
+    def _get_number_of_stores(endpoint, header_dict):
+
+      response = requests.get(endpoint, headers=header_dict)
 
       if response.status_code == 200:
-
-        store_data = response.json()
-        df_new_store_data = pd.DataFrame([store_data])
-        df_store_data = pd.concat([df_store_data, df_new_store_data], ignore_index=True)
+        num_of_stores = response.json()['number_stores']
+        return num_of_stores
 
       else:
 
         print(response.status_code)
+        # should this return something, e.g. False?
 
-    return df_store_data
+    def _initialise_stores_df_loading(self, endpoint, header_dict):
 
-  # Method to extract products data from csv S3 storage, takes in S3 address ("s3://data-handling-public/products.csv") as an argument, returns pandas dataframe
-  @staticmethod
-  def extract_from_s3(s3_uri):
+        response = requests.get(f"{endpoint}0", headers=header_dict)
 
-    s3_path_parts = s3_uri.split('://')[1].split('/')
-    bucket_name = s3_path_parts[0]
-    object_name = s3_path_parts[1]
-    file_name = object_name
+        if response.status_code == 200:
 
-    if os.path.isfile(file_name):
-        os.remove(file_name)
+            store_data = response.json()
+            df_store_data = pd.DataFrame([store_data])
+            df_store_data.set_index('index', inplace=True)
 
-    try:
+            return df_store_data
 
-      s3 = boto3.client('s3')
-      s3.download_file(bucket_name, object_name, file_name)
-      products_df = pd.read_csv(file_name, index_col=[0])
-      # also write code to remove csv file from project repo?
-      return products_df
+        else:
 
-    except ClientError as e:
+            print(response.status_code)
+            # return something here?
 
-      if e.response['Error']['Code'] == 'NoSuchBucket':
-        print('The specified bucket does not exist.')
-      elif e.response['Error']['Code'] == 'NoSuchKey':
-        print('The specified key does not exist.')
-      else:
-        print(f"{e.response['Error']['Code']}\n{e.response['Error']['Message']}")
+    def _add_remaining_stores_as_rows_to_df(self, df_store_data, num_of_stores, endpoint, header_dict):
 
+        for i in range(1, num_of_stores):
 
+          response = requests.get(f"{endpoint}{i}", headers=header_dict)
 
-  # method to return a dataframe from a public JSON URL (to be used for events date data)
-  @staticmethod
-  def extract_data_from_json_url(json_url):
+          if response.status_code == 200:
 
-    df = pd.read_json(json_url)
+            store_data = response.json()
+            df_new_store_data = pd.DataFrame([store_data])
+            df_store_data = pd.concat([df_store_data, df_new_store_data], ignore_index=True)
 
-    return df
+          else:
 
-# %%
-data_extractor = DataExtractor()
-conn = DatabaseConnector()
+            print(response.status_code)
 
-def extract_card_data_for_cleaning():
-  extracted_card_data = data_extractor.retrieve_pdf_data("https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf")
-  return extracted_card_data
+        return df_store_data
 
-def extract_user_data_for_cleaning():
-  extracted_user_data = data_extractor.read_rds_table(conn, 'legacy_users')
-  return extracted_user_data
+    # method
+    def _retrieve_stores_data(self, endpoint):
 
-def extract_stores_data_for_cleaning():
-  extracted_stores_data = data_extractor.retrieve_stores_data("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/")
-  return extracted_stores_data
+        header_dict = self.__retrieve_api_authorisation()
 
-def extract_products_data_for_cleaning():
-  extracted_products_data = data_extractor.extract_from_s3("s3://data-handling-public/products.csv")
-  return extracted_products_data
+        df_store_data = self._initialise_stores_df_loading(endpoint, header_dict)
 
-# conn.list_db_tables()
+        num_of_stores = self._get_number_of_stores("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores", header_dict)
 
-def extract_orders_data_for_cleaning():
-  extracted_orders_data = data_extractor.read_rds_table(conn, 'orders_table')
-  return extracted_orders_data
+        df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, endpoint, header_dict)
 
-# %%
-def extract_dates_event_data_for_cleaning():
-  extracted_dates_event_data = data_extractor.extract_data_from_json_url('https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json')
-  return extracted_dates_event_data
-
-# %%
+        return df_store_data

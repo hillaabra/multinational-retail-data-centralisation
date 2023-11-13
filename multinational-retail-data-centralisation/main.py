@@ -2,29 +2,38 @@
 from data_cleaning import DataCleaning
 from database_utils import DatabaseConnector
 
+from data_cleaning import CardData, DatesEventData, OrdersData, ProductsData, StoresData, UserData
 # %%
 if __name__ == "__main__":
 
   conn = DatabaseConnector()
-  data_cleaner = DataCleaning()
 
+  card_data = CardData()
+  card_data.extract_data()
+  cleaned_card_data = card_data.clean_data()
+  conn.upload_to_local_db(cleaned_card_data, 'dim_card_details')
 
-  cleaned_user_data = data_cleaner.clean_user_data()
-  conn.upload_to_db(cleaned_user_data, 'dim_users')
+  user_data = UserData()
+  user_data.extract_data()
+  cleaned_user_data = user_data.clean_data()
+  conn.upload_to_local_db(cleaned_user_data, 'dim_users')
 
+  stores_data = StoresData()
+  stores_data.extract_data()
+  cleaned_stores_data = stores_data.clean_data()
+  conn.upload_to_local_db(cleaned_stores_data, 'dim_store_details')
 
-  cleaned_card_data = data_cleaner.clean_card_data()
-  conn.upload_to_db(cleaned_card_data, 'dim_card_details')
+  products_data = ProductsData()
+  products_data.extract_data()
+  cleaned_products_data = products_data.clean_data()
+  conn.upload_to_local_db(cleaned_products_data, 'dim_products')
 
+  orders_data = OrdersData()
+  orders_data.extract_data()
+  cleaned_orders_data = orders_data.clean_data()
+  conn.upload_to_local_db(cleaned_orders_data, 'orders_table')
 
-  cleaned_stores_data = data_cleaner.clean_stores_data()
-  conn.upload_to_db(cleaned_stores_data, 'dim_store_details')
-
-  cleaned_products_data = data_cleaner.clean_products_data()
-  conn.upload_to_db(cleaned_products_data, 'dim_products')
-
-  cleaned_orders_data = data_cleaner.clean_orders_data()
-  conn.upload_to_db(cleaned_orders_data, 'orders_table')
-
-  cleaned_dates_event_data = data_cleaner.clean_date_events_data()
-  conn.upload_to_db(cleaned_dates_event_data, 'dim_date_times')
+  dates_event_data = DatesEventData()
+  dates_event_data.extract_data()
+  cleaned_dates_event_data = dates_event_data.clean_data()
+  conn.upload_to_local_db(cleaned_dates_event_data, 'dim_date_times')
