@@ -53,7 +53,7 @@ class DatabaseConnector:
       return engine
 
     # method that takes in a Pandas DataFrame and table name to upload to as an argument
-    def upload_to_local_db(self, pd_df, table_name, dtypes):
+    def upload_to_local_db(self, pd_df, table_name, dtypes=None):
       engine = self.init_local_db_engine()
       engine.execution_options(isolation_level='AUTOCOMMIT').connect()
       pd_df.to_sql(table_name, engine, if_exists='replace', dtype=dtypes) # alter method so that I can call it with a dictionary too
