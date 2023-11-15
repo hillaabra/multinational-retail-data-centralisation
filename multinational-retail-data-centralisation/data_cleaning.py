@@ -61,7 +61,7 @@ class DataCleaning(ABC):
             try:
                 df[column] = pd.to_datetime(df[column], format=format_flag, errors=errors_flag)
             except:
-                print(" error in _cast_columns_to_datetime64 - at astype line")
+                print("error on to_datetime cast")
 
     @staticmethod
     def _remove_rows_with_nan_values_in_specified_column(df: pd.DataFrame, column: str) -> pd.DataFrame:
