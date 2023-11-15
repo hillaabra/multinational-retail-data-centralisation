@@ -29,19 +29,19 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
                 nums = weight_str.split(' x ')
                 # remove anything that is not a numeric digit or decimal place
                 nums[1] = re.sub(r'[^\d\.]', '', nums[1])
-                return round((float(nums[0])*float(nums[1]))/1000, 2)
+                return round((float(nums[0])*float(nums[1]))/1000, 4)
             # then for values already entered as 'kg'
             elif re.search('kg', weight_str):
                 weight_str = re.sub(r'[^\d\.]', '', weight_str)
-                return round(float(weight_str), 2)
+                return round(float(weight_str), 4)
             # then for values entered in grams ('g') or ml (for ml, using 1:1 conversion ratio)
             elif re.search(r'g|(ml)', weight_str):
                 weight_str = re.sub(r'[^\d\.]', '', weight_str)
-                return round((float(weight_str)/1000), 2)
+                return round((float(weight_str)/1000), 4)
             # then for values entered in ounces ('oz')
             elif re.search('oz', weight_str):
                 weight_str = re.sub(r'[^\d\.]', '', weight_str)
-                return round((float(weight_str)*0.02834952), 2)
+                return round((float(weight_str)*0.02834952), 4)
             # catching exceptions
             else:
                 print(f"Error: The unit measurement of {weight_str} was not accounted for in convert_product_weight_to_kg_function")
@@ -85,15 +85,14 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         setattr(self, 'cleaned_data', pd_df)
 
 # %%
-products_data = ProductsData()
+if __name__ == "__main__":
+    products_data = ProductsData()
+    products_data.extract_data()
+    products_data.clean_extracted_data()
 # %%
-products_data.extract_data()
+
 # %%
-products_data.extracted_data.info()
-# %%
-products_data.clean_extracted_data()
-# %%
-products_data.extracted_data.info()
+products_data.upload_to_db()
 # %%
 
 # from sqlalchemy.dialects.postgresql import DATE, NUMERIC, REAL, UUID, VARCHAR
@@ -108,8 +107,9 @@ products_data.extracted_data.info()
 #           'product_code': VARCHAR
 #           }
 
-products_data.upload_to_db(cleaned_products_data, 'dim_products')
-
+products_data.update_db()
+# %%
+products_data.cleaned_data.sort_values('weight')
 # %%
 for column in ['category', 'EAN', 'removed', 'product_code']:
   products_data.set_varchar_integer_to_max_length_of_column(column)
