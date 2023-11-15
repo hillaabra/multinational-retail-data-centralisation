@@ -1,11 +1,9 @@
-import psycopg2
+from abc import ABC, abstractmethod
 import yaml
+
+import psycopg2
 from sqlalchemy import create_engine, inspect, text
 
-# I could also have the different dataset classes inherit from the localdatabase class so that the
-# data schema methods can be called directly from inside the class? table_name attributes assigned with initialisation?
-
-from abc import ABC, abstractmethod
 
 class DatabaseConnector(ABC):
 
@@ -75,37 +73,41 @@ class LocalDatabaseConnector(DatabaseConnector):
 
       return engine
 
-    # method that takes in a Pandas DataFrame and table name to upload to as an argument
-    def upload_to_db(self, pd_df, table_name, dtypes=None):
-      engine = self._init_db_engine()
-      engine.execution_options(isolation_level='AUTOCOMMIT').connect()
-      pd_df.to_sql(table_name, engine, if_exists='replace', dtype=dtypes) # alter method so that I can call it with a dictionary too
-      engine.dispose()
-
     # method that takes in a query_text
     def update_db(self, query_text: str):
        engine = self._init_db_engine()
        with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
           conn.execute(text(query_text))
 
-    @staticmethod
-    def _get_max_length_of_table_column(engine, table_name: str, column_name: str):
-        with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            query = f"SELECT MAX(LENGTH({column_name})) FROM {table_name};"
+
+class DatabaseTableConnector(LocalDatabaseConnector):
+
+    def __init__(self, table_name):
+       super().__init__()
+       self.table_name = table_name
+       self.engine = self._init_db_engine()
+
+     # method that takes in a Pandas DataFrame and table name to upload to as an argument
+    def upload_to_db(self, pd_df, dtypes=None):
+      self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
+      pd_df.to_sql(self.table_name, self.engine, if_exists='replace', dtype=dtypes) # alter method so that I can call it with a dictionary too
+      self.engine.dispose()
+
+    def _get_max_length_of_table_column(self, column_name: str):
+        with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+            query = f"SELECT MAX(LENGTH({column_name})) FROM {self.table_name};"
             result = conn.execute(text(query)).fetchone() # this is returned as a tuple (e.g. (12, 0))
         return result[0] # index to get just the numeric value
 
-    def set_varchar_integer_to_max_length_of_column(self, table_name: str, column_name: str):
-        engine = self._init_db_engine()
-        max_length = self._get_max_length_of_table_column(engine, table_name, column_name)
-        query = f'ALTER TABLE {table_name} ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
-        with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+    def set_varchar_integer_to_max_length_of_column(self, column_name: str):
+        max_length = self._get_max_length_of_table_column(self.table_name, column_name)
+        query = f'ALTER TABLE {self.table_name} ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
+        with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             conn.execute(text(query))
 
-    def print_data_types_of_columns_in_specified_table(self, table_name: str):
-        engine = self._init_db_engine()
-        query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix, datetime_precision, udt_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}';"
-        with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+    def print_data_types_of_columns_in_specified_table(self):
+        query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix, datetime_precision, udt_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{self.table_name}';"
+        with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             result = conn.execute(text(query))
             for row in result:
                print(row) # currently this is printing without the column headings - try with psycopg maybe?
