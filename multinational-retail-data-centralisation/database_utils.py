@@ -112,9 +112,10 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             conn.execute(text(query))
 
-    def print_data_types_of_columns_in_specified_table(self):
+    def print_data_types_of_columns_in_database_table(self):
         query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix, datetime_precision, udt_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{self.table_name}';"
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             result = conn.execute(text(query))
+            print(result.keys())
             for row in result:
-               print(row) # currently this is printing without the column headings - try with psycopg maybe?
+               print(row)
