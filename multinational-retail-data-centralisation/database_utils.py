@@ -34,6 +34,7 @@ class DatabaseConnector:
       table_names = inspector.get_table_names()
       return table_names
 
+
     # method to connect to local pgadmin database
     def init_local_db_engine(self):
 
@@ -55,7 +56,7 @@ class DatabaseConnector:
     def upload_to_local_db(self, pd_df, table_name, dtypes):
       engine = self.init_local_db_engine()
       engine.execution_options(isolation_level='AUTOCOMMIT').connect()
-      pd_df.to_sql(table_name, engine, if_exists='replace', dtype=dtypes)
+      pd_df.to_sql(table_name, engine, if_exists='replace', dtype=dtypes) # alter method so that I can call it with a dictionary too
       engine.dispose()
 
     # method that takes in a query_text
@@ -76,4 +77,4 @@ class DatabaseConnector:
         max_length = self.get_max_length_of_table_column(engine, table_name, column_name)
         query = f"ALTER TABLE {table_name} ALTER COLUMN {column_name} TYPE VARCHAR({max_length});"
         with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            result = conn.execute(text(query))
+            conn.execute(text(query))
