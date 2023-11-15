@@ -8,8 +8,7 @@ import pandas as pd
 import sqlalchemy
 import tabula
 
-from database_utils import DatabaseConnector
-
+from database_utils import RDSDatabaseConnector
 
 class DataExtractor:
 
@@ -26,7 +25,7 @@ class DataExtractor:
         elif self.source_type == 'JSON':
             df = self._extract_data_from_json_url(self.source_location)
         elif self.source_type == 'AWS_RDS_resource':
-            conn = DatabaseConnector()
+            conn = RDSDatabaseConnector()
             df = self._read_rds_table(conn, self.source_location)
         elif self.source_type == 'S3_resource':
             df = self._extract_from_s3(self.source_location)
@@ -50,8 +49,8 @@ class DataExtractor:
         return df
 
     @staticmethod
-    def _read_rds_table(instance, table_name):
-      engine = instance.init_remote_db_engine()
+    def _read_rds_table(rds_db_connector_instance, table_name):
+      engine = rds_db_connector_instance._init_db_engine()
       engine.connect()
       pd_df = pd.read_sql_table(table_name, engine)
       engine.dispose()
