@@ -86,12 +86,21 @@ class DatabaseTableConnector(LocalDatabaseConnector):
        super().__init__()
        self.table_name = table_name
        self.engine = self._init_db_engine()
+       self.cleaned_data = None
 
      # method that takes in a Pandas DataFrame and table name to upload to as an argument
-    def upload_to_db(self, pd_df, dtypes=None):
-      self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
-      pd_df.to_sql(self.table_name, self.engine, if_exists='replace', dtype=dtypes) # alter method so that I can call it with a dictionary too
-      self.engine.dispose()
+    def upload_to_db(self, dtypes=None):
+
+      if self.cleaned_data:
+        try:
+          self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
+          self.cleaned_data.to_sql(self.table_name, self.engine, if_exists='replace', dtype=dtypes)
+          self.engine.dispose()
+        except Exception:
+           print(Exception)
+      else:
+         (print("Dataset not yet cleaned. cleaned_data property has no dataframe to upload."))
+
 
     def _get_max_length_of_table_column(self, column_name: str):
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
