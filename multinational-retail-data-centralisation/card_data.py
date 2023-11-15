@@ -60,7 +60,7 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         #return cd_df
 
-    def clean_extracted_data(self):
+    def clean_extracted_data(self) -> None:
 
         card_data_df = self.extracted_data.copy()
 
@@ -74,10 +74,8 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         # convert card_provider column to category
         self._cast_columns_to_category(card_data_df, ['card_provider'])
-        #self['cleaned_data'] = card_data_df
 
-        return card_data_df
-
+        setattr(self, 'cleaned_data', card_data_df)
 
 
 

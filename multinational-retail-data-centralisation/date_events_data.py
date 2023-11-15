@@ -11,7 +11,7 @@ class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         except Exception:
             print("Something went wrong initialising the DateEventsData child class.")
 
-    def clean_extracted_data(self):
+    def clean_extracted_data(self) -> None:
 
         de_df = self.extracted_data.copy()
 
@@ -26,7 +26,6 @@ class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         self._rename_columns(de_df, {'timestamp': 'datetime'})
         self._drop_columns(de_df, ['month', 'year', 'day'])
 
-        # self['cleaned_data'] = de_df
-        return de_df
+        setattr(self, 'cleaned_data', de_df)
 
 

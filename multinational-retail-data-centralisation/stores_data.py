@@ -16,7 +16,7 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         except Exception:
           print("Something went wrong initialising the StoresData child class")
 
-    def clean_extracted_data(self):
+    def clean_extracted_data(self) -> None:
 
         sd_df = self.extracted_data.copy()
 
@@ -74,8 +74,7 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         # casting the opening_date column to datetime
         self._cast_columns_to_datetime64(sd_df, ['opening_date'], 'mixed', 'raise')
 
-        # self['cleaned_data'] = sd_df
-        return sd_df
+        setattr(self, 'cleaned_data', sd_df)
 
 
 

@@ -15,7 +15,7 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
         except Exception:
           print("Something went wrong initialising the OrdersData child class")
 
-    def clean_extracted_data(self):
+    def clean_extracted_data(self) -> None:
 
         od_df = self.extracted_data.copy()
 
@@ -27,8 +27,7 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         self._cast_columns_to_integer(od_df, ['index', 'product_quantity'], 'raise')
 
-        #self['cleaned_data'] = od_df
-        return od_df
+        setattr(self, 'cleaned_data', od_df)
 
 
 

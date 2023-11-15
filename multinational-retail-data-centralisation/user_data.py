@@ -49,8 +49,7 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         # make phone_number uniform: UK numbers, German numbers, US numbers - for later if there's time
 
-        #self['cleaned_data'] = ud_df
-        return ud_df
+        setattr(self, 'cleaned_data', ud_df)
 
 # %%
 user_data = UserData()

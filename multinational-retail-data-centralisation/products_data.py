@@ -52,7 +52,7 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         return pd_df
 
     # method to clean product data
-    def clean_extracted_data(self):
+    def clean_extracted_data(self) -> None:
 
         pd_df = self.extracted_data.copy()
 
@@ -82,16 +82,18 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         # date_added tp datetime
         self._cast_columns_to_datetime64(pd_df, ['date_added'], '%Y-%m-%d', 'raise', parse_first=True)
 
-        #self['cleaned_data'] = pd_df
-        return pd_df
+        setattr(self, 'cleaned_data', pd_df)
 
+# %%
 products_data = ProductsData()
 # %%
 products_data.extract_data()
 # %%
-cleaned_products_data = products_data.clean_extracted_data()
+products_data.extracted_data.info()
 # %%
-cleaned_products_data.info()
+products_data.clean_extracted_data()
+# %%
+products_data.extracted_data.info()
 # %%
 
 # from sqlalchemy.dialects.postgresql import DATE, NUMERIC, REAL, UUID, VARCHAR
@@ -112,4 +114,7 @@ products_data.upload_to_db(cleaned_products_data, 'dim_products')
 for column in ['category', 'EAN', 'removed', 'product_code']:
   products_data.set_varchar_integer_to_max_length_of_column(column)
 
+# %%
+query = "SELECT * FROM dim_products LIMIT 5;"
+products_data.update_db(query)
 # %%
