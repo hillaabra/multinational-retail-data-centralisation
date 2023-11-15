@@ -65,7 +65,10 @@ class DataExtractor:
       file_name = object_name
 
       if os.path.isfile(file_name):
-          os.remove(file_name)
+         products_df = pd.read_csv(file_name, index_col=[0])
+         return products_df
+
+          #os.remove(file_name)
 
       try:
 
