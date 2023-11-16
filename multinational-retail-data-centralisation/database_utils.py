@@ -10,6 +10,9 @@ class DatabaseConnector(ABC):
     # Method that reads the credentials in the yaml file and returns a dictionary of the credentials
     def __init__(self, credentials_yaml):
        self.credentials_yaml = credentials_yaml
+       self.engine = self._init_db_engine()
+       self.table_names_in_db = []
+       self._set_db_table_names()
 
     def _read_db_creds(self):
       with open(self.credentials_yaml, 'r') as stream: # check relative filepath later
@@ -20,6 +23,15 @@ class DatabaseConnector(ABC):
     @abstractmethod
     def _init_db_engine(self):
        pass
+
+    def _set_db_table_names(self):
+      inspector = inspect(self.engine)
+      table_names = inspector.get_table_names()
+      self.table_names_in_db = table_names
+
+    def list_db_table_names(self):
+        return self.table_names_in_db
+
 
 
 class RDSDatabaseConnector(DatabaseConnector):
@@ -44,11 +56,12 @@ class RDSDatabaseConnector(DatabaseConnector):
       return engine
 
     # method to list all the tables in the database so you know which tables you can extract data from
-    def list_db_tables(self):
-      engine = self._init_db_engine()
-      inspector = inspect(engine)
-      table_names = inspector.get_table_names()
-      return table_names
+    # I abstracted this method so its in the parent class and relies on the table_nam
+    # def list_db_table_names(self):
+    #   engine = self._init_db_engine()
+    #   inspector = inspect(engine)
+    #   table_names = inspector.get_table_names()
+    #   return table_names
 
 
 class LocalDatabaseConnector(DatabaseConnector):
@@ -75,9 +88,20 @@ class LocalDatabaseConnector(DatabaseConnector):
 
     # method that takes in a query_text
     def update_db(self, query_text: str):
-       engine = self._init_db_engine()
-       with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+        engine = self._init_db_engine()
+        with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
           conn.execute(text(query_text))
+        # in case of creating or deleting tables - updating table_names property of object using method
+        self._set_db_table_names()
+        # self.table_in_db = self._check_if_table_in_db() - this won't work here because its defined in the child class - consider abstracting to a check all properties function that I can define in the different classes
+
+    # I abstracted this method
+    #method to get table names in db (NB this is the same as in the RDSDatabaseConnector class - should this be a method in the parent class?)
+    # def list_db_table_names(self):
+    #     engine = self._init_db_engine()
+    #     inspector = inspect(engine)
+    #     table_names = inspector.get_table_names()
+    #     return table_names
 
 
 class DatabaseTableConnector(LocalDatabaseConnector):
@@ -85,22 +109,28 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     def __init__(self, table_name):
        super().__init__()
        self.table_name = table_name
-       self.engine = self._init_db_engine()
+       # self.engine = self._init_db_engine() - abstracted in parent class
        self.cleaned_data = None
-       self.table_in_db = self._check_if_table_in_db()
+       self.table_in_db_at_init = self._check_if_table_in_db()
 
+    # method to list_db_table_names
+    # abstracted this in parent class
+    # def list_db_table_names(self):
+    #     inspector = inspect(self.engine)
+    #     table_names = inspector.get_table_names()
+    #     return table_names
 
     #method that checks if the table is in the db
-    def _check_if_table_in_db(self):
-        inspector = inspect(self.engine)
-        is_in_db = self.table_name in inspector.get_table_names()
+    def _check_if_table_in_db(self) -> bool:
+        # table_names = self.list_db_table_names()
+        is_in_db = self.table_name in self.table_names_in_db
         if is_in_db:
           print("A table with this name has already been uploaded to the postgres sales_data database.")
         return is_in_db
 
      # method that takes in a Pandas DataFrame and table name to upload to as an argument
     def upload_to_db(self, dtypes=None):
-        if self.table_in_db:
+        if self.table_in_db_at_init:
             user_input = input("This table already exists. Enter Y if you wish to continue. This will override the existing table.")
             if user_input == 'Y' and self.cleaned_data is not None:
               try:
@@ -113,11 +143,13 @@ class DatabaseTableConnector(LocalDatabaseConnector):
               print("The cleaned_data property on this instance is empty. There is no dataframe to upload.")
             else:
               print("Upload to db cancelled.")
-        else:
+        else: # if table_name not already in db at initialisation
             try:
                 self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
                 self.cleaned_data.to_sql(self.table_name, self.engine, dtype=dtypes)
                 self.engine.dispose()
+                # update table_names_in_db_property after upload
+                self._set_db_table_names()
             except Exception:
                 print(Exception)
 
