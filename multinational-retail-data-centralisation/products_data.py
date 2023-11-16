@@ -87,34 +87,46 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
 # %%
 if __name__ == "__main__":
     products_data = ProductsData()
+    # %%
     products_data.extract_data()
     products_data.clean_extracted_data()
 # %%
-
-# %%
-products_data.upload_to_db()
+print(products_data.table_in_db)
 # %%
 
-# from sqlalchemy.dialects.postgresql import DATE, NUMERIC, REAL, UUID, VARCHAR
-# dtypes = {'product_name': VARCHAR(255),
-#           'product_price': NUMERIC,
-#           'weight': REAL,
-#           'category': VARCHAR,
-#           'EAN': VARCHAR,
-#           'date_added': DATE,
-#           'uuid': UUID,
-#           'removed': VARCHAR,
-#           'product_code': VARCHAR
-#           }
+# %%
 
-products_data.update_db()
+from sqlalchemy.dialects.postgresql import DATE, UUID
+dtypes = {'date_added': DATE, 'uuid': UUID}
+products_data.upload_to_db(dtypes=dtypes)
 # %%
 products_data.cleaned_data.sort_values('weight')
 # %%
-for column in ['category', 'EAN', 'removed', 'product_code']:
-  products_data.set_varchar_integer_to_max_length_of_column(column)
+
 
 # %%
-query = "SELECT * FROM dim_products LIMIT 5;"
+query = "ALTER TABLE dim_products\
+            ADD COLUMN weight_class VARCHAR(14);"
+query2 = "UPDATE dim_products\
+            SET weight_class = CASE\
+                WHEN weight < 2 THEN 'Light'\
+                WHEN weight < 40 THEN 'Mid_Sized'\
+                WHEN weight < 140 THEN 'Heavy'\
+                ELSE 'Truck_Required'\
+            END;"
+# %%
 products_data.update_db(query)
 # %%
+products_data.update_db(query2)
+# %%
+for column in ['EAN', 'product_code']:
+  products_data.set_varchar_integer_to_max_length_of_column(column)
+# %%
+query3 = 'ALTER TABLE dim_products RENAME removed TO still_available;'
+products_data.update_db(query3)
+# %%
+query4 = "ALTER TABLE dim_products ALTER Still_available TYPE bool \
+    USING CASE WHEN Still_available = 'Still_avaliable' THEN TRUE ELSE FALSE END;"
+
+products_data.update_db(query4)
+
