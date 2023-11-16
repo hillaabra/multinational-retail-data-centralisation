@@ -1,38 +1,100 @@
 # %%
-from data_cleaning import CardData, DatesEventData, OrdersData, ProductsData, StoresData, UserData
+import re
 
-from database_utils import LocalDatabaseConnector
+from sqlalchemy.dialects.postgresql import SMALLINT, DATE, UUID, VARCHAR
+
+from card_data import CardData
+from date_events_data import DateEventsData
+from orders_data import OrdersData
+from products_data import ProductsData
+from stores_data import StoresData
+from user_data import UserData
+
 # %%
 if __name__ == "__main__":
 
-  conn = LocalDatabaseConnector()
 
   card_data = CardData()
-  card_data.extract_data()
-  cleaned_card_data = card_data.clean_data()
-  conn.upload_to_db(cleaned_card_data, 'dim_card_details')
-
-  user_data = UserData()
-  user_data.extract_data()
-  cleaned_user_data = user_data.clean_data()
-  conn.upload_to_db(cleaned_user_data, 'dim_users')
-
   stores_data = StoresData()
-  stores_data.extract_data()
-  cleaned_stores_data = stores_data.clean_data()
-  conn.upload_to_db(cleaned_stores_data, 'dim_store_details')
-
+  user_data = UserData()
   products_data = ProductsData()
-  products_data.extract_data()
-  cleaned_products_data = products_data.clean_data()
-  conn.upload_to_db(cleaned_products_data, 'dim_products')
-
   orders_data = OrdersData()
-  orders_data.extract_data()
-  cleaned_orders_data = orders_data.clean_data()
-  conn.upload_to_db(cleaned_orders_data, 'orders_table')
+  date_events_data = DateEventsData()
 
-  dates_event_data = DatesEventData()
-  dates_event_data.extract_data()
-  cleaned_dates_event_data = dates_event_data.clean_data()
-  conn.upload_to_db(cleaned_dates_event_data, 'dim_date_times')
+  dataset_instances = [card_data, stores_data, user_data, products_data, orders_data, date_events_data]
+
+  for dataset_instance in dataset_instances:
+    dataset_instance.extract_data()
+    dataset_instance.clean_extracted_data()
+
+  card_data_dtypes = {'card_number': VARCHAR, 'expiry_date': VARCHAR, 'date_payment_confirmed': DATE, 'card_provider': VARCHAR}
+  card_data.upload_to_db(card_data_dtypes)
+  card_data.set_varchar_type_limit_to_max_char_length_of_columns(['card_number', 'expiry_date', 'card_provider'])
+
+  date_events_dtypes = {'month': VARCHAR, 'day': VARCHAR, 'year': VARCHAR, 'time_period': VARCHAR, 'date_uuid': UUID}
+  date_events_data.upload_to_db(dtypes=date_events_dtypes)
+  date_events_data.set_varchar_type_limit_to_max_char_length_of_columns(['month', 'day', 'year', 'time_period'])
+
+  orders_data_dtypes = {"date_uuid": UUID,
+              "user_uuid": UUID,
+              "card_number": VARCHAR,
+              "store_code": VARCHAR,
+              "product_code": VARCHAR,
+              "product_quality": SMALLINT
+    }
+
+  orders_data.upload_to_db(orders_data_dtypes)
+  orders_data.set_varchar_type_limit_to_max_char_length_of_columns(['card_number', 'store_code', 'product_code'])
+
+  products_data_dtypes = {'date_added': DATE, 'uuid': UUID}
+  products_data.upload_to_db(dtypes=products_data_dtypes)
+
+  query1 = "ALTER TABLE dim_products\
+                ADD COLUMN weight_class VARCHAR(14);"
+  products_data.update_db(query1)
+
+  query2 = "UPDATE dim_products\
+                SET weight_class = CASE\
+                    WHEN weight < 2 THEN 'Light'\
+                    WHEN weight < 40 THEN 'Mid_Sized'\
+                    WHEN weight < 140 THEN 'Heavy'\
+                    ELSE 'Truck_Required'\
+                END;"
+  products_data.update_db(query2)
+
+  products_data.set_varchar_type_limit_to_max_char_length_of_columns(['EAN', 'product_code'])
+
+
+  query3 = 'ALTER TABLE dim_products RENAME removed TO still_available;'
+  products_data.update_db(query3)
+
+  query4 = "ALTER TABLE dim_products ALTER Still_available TYPE bool \
+                USING CASE \
+                    WHEN Still_available = 'Still_avaliable' THEN TRUE \
+                    ELSE FALSE END;"
+  products_data.update_db(query4)
+
+  stores_data_dtypes = {"locality": VARCHAR(255), # currently text
+              "opening_date": DATE, # currently 'timestamp without timezone' as I had casted it to datetime in Pandas - should I have left as string?
+              "store_type": VARCHAR(255), # currently text, varchar(255) NULLABLE requested - already nullable in current form - check it stays that way
+              "continent": VARCHAR(255) # currently text
+              }
+
+  stores_data.upload_to_db(stores_data_dtypes)
+  stores_data.set_varchar_type_limit_to_max_char_length_of_columns(['store_code', 'country_code'])
+
+  user_data_dtypes = {"first_name": VARCHAR(255),
+            "last_name": VARCHAR(255),
+            "date_of_birth": DATE,
+            "country_code": VARCHAR, # set maximum length after upload to server
+            "user_uuid": UUID,
+            "join_date": DATE}
+  user_data.upload_to_db(user_data_dtypes)
+
+  user_data.set_varchar_type_limit_to_max_char_length_of_columns(['country_code'])
+
+  for dataset_instance in dataset_instances:
+    if re.match(r'^dim', dataset_instance.table_name):
+      # print(f"this dataset, {dataset_instance.table_name}, starts with dim")
+      dataset_instance.set_primary_key_column()
+
