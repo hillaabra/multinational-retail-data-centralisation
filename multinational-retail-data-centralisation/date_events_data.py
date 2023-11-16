@@ -45,3 +45,5 @@ if __name__ == '__main__':
     date_events.upload_to_db(dtypes=dtypes)
     for column in ['month', 'day', 'year', 'time_period']:
         date_events.set_varchar_integer_to_max_length_of_column(column)
+    date_events.set_primary_key_column()
+
