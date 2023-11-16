@@ -166,11 +166,31 @@ class DatabaseTableConnector(LocalDatabaseConnector):
             conn.execute(text(query))
 
     def print_data_types_of_columns_in_database_table(self):
-        query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix, datetime_precision, udt_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{self.table_name}';"
+        query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix, datetime_precision, udt_name, is_nullable FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{self.table_name}';"
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             result = conn.execute(text(query))
             print(result.keys())
             for row in result:
                print(row)
+
+    def return_column_in_common_with_orders_table(self):
+        query = f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS \
+                    WHERE TABLE_NAME = '{self.table_name}' \
+                    AND COLUMN_NAME != 'index' \
+                INTERSECT \
+                  SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS \
+                    WHERE TABLE_NAME = 'orders_table';"
+        with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+            result = conn.execute(text(query)).fetchone() # this should be returned as a tuple
+        column_name = result[0] # index to just get the column value
+        return column_name
+
+    def set_primary_key_column(self):
+        column_name = self.return_column_in_common_with_orders_table()
+        query1 = f'ALTER TABLE "{self.table_name}" ALTER COLUMN "{column_name}" SET NOT NULL;'
+        query2 = f'ALTER TABLE "{self.table_name}" ADD PRIMARY KEY ("{column_name}");'
+        with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+            conn.execute(text(query1))
+            conn.execute(text(query2))
 
 
