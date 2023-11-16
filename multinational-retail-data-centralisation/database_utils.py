@@ -87,27 +87,48 @@ class DatabaseTableConnector(LocalDatabaseConnector):
        self.table_name = table_name
        self.engine = self._init_db_engine()
        self.cleaned_data = None
+       self.table_in_db = self._check_if_table_in_db()
+
+
+    #method that checks if the table is in the db
+    def _check_if_table_in_db(self):
+        inspector = inspect(self.engine)
+        is_in_db = self.table_name in inspector.get_table_names()
+        if is_in_db:
+          print("A table with this name has already been uploaded to the postgres sales_data database.")
+        return is_in_db
 
      # method that takes in a Pandas DataFrame and table name to upload to as an argument
     def upload_to_db(self, dtypes=None):
-        if self.cleaned_data is not None:
-          try:
-            self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
-            self.cleaned_data.to_sql(self.table_name, self.engine, if_exists='replace', dtype=dtypes)
-            self.engine.dispose()
-          except Exception:
-            print(Exception)
+        if self.table_in_db:
+            user_input = input("This table already exists. Enter Y if you wish to continue. This will override the existing table.")
+            if user_input == 'Y' and self.cleaned_data is not None:
+              try:
+                self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
+                self.cleaned_data.to_sql(self.table_name, self.engine, if_exists='replace', dtype=dtypes)
+                self.engine.dispose()
+              except Exception:
+                print(Exception)
+            elif input == 'Y':
+              print("The cleaned_data property on this instance is empty. There is no dataframe to upload.")
+            else:
+              print("Upload to db cancelled.")
         else:
-           print("Extracted data has not yet been cleaned. cleaned_data property is empty.")
+            try:
+                self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
+                self.cleaned_data.to_sql(self.table_name, self.engine, dtype=dtypes)
+                self.engine.dispose()
+            except Exception:
+                print(Exception)
 
     def _get_max_length_of_table_column(self, column_name: str):
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            query = f"SELECT MAX(LENGTH({column_name})) FROM {self.table_name};"
+            query = f'SELECT MAX(LENGTH("{column_name}")) FROM {self.table_name};'
             result = conn.execute(text(query)).fetchone() # this is returned as a tuple (e.g. (12, 0))
         return result[0] # index to get just the numeric value
 
     def set_varchar_integer_to_max_length_of_column(self, column_name: str):
-        max_length = self._get_max_length_of_table_column(self.table_name, column_name)
+        max_length = self._get_max_length_of_table_column(column_name)
         query = f'ALTER TABLE {self.table_name} ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             conn.execute(text(query))
@@ -119,3 +140,5 @@ class DatabaseTableConnector(LocalDatabaseConnector):
             print(result.keys())
             for row in result:
                print(row)
+
+
