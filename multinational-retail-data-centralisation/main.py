@@ -93,8 +93,13 @@ if __name__ == "__main__":
 
   user_data.set_varchar_type_limit_to_max_char_length_of_columns(['country_code'])
 
-  for dataset_instance in dataset_instances:
+for dataset_instance in dataset_instances:
     if re.match(r'^dim', dataset_instance.table_name):
       # print(f"this dataset, {dataset_instance.table_name}, starts with dim")
       dataset_instance.set_primary_key_column()
+      primary_key_column = dataset_instance.return_column_in_common_with_orders_table()
+      orders_table_query1 = f'ALTER TABLE "orders_table" ALTER COLUMN "{primary_key_column}" SET NOT NULL'
+      dataset_instance.update_db(orders_table_query1)
+      orders_table_query2 = f'ALTER TABLE "orders_table" ADD CONSTRAINT fk_{primary_key_column} FOREIGN KEY ("{primary_key_column}") REFERENCES {dataset_instance.table_name} ("{primary_key_column}");'
+      dataset_instance.update_db(orders_table_query2)
 
