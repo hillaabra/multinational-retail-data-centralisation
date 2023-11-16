@@ -1,5 +1,5 @@
 # %%
-from sqlalchemy.dialects.postgresql import BIGINT, INTEGER, SMALLINT, UUID, VARCHAR
+from sqlalchemy.dialects.postgresql import SMALLINT, UUID, VARCHAR
 
 from data_extraction import DataExtractor
 from data_cleaning import DataCleaning
@@ -30,30 +30,27 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
         setattr(self, 'cleaned_data', od_df)
 
 
+# %%
+if __name__ == "__main__":
+    orders_data = OrdersData()
+    orders_data.extract_data()
+    orders_data.clean_extracted_data()
 
-# check this works after checking AWS subscription
-orders_data = OrdersData()
-orders_data.extract_data()
+    dtypes = {"date_uuid": UUID,
+              "user_uuid": UUID,
+              "card_number": VARCHAR,
+              "store_code": VARCHAR,
+              "product_code": VARCHAR,
+              "product_quality": SMALLINT
+    }
 
-orders_data.extracted_data.describe()
-# %%
-# in theory the rest should work...
-cleaned_orders_data = orders_data.clean_extracted_data()
-# %%
-cleaned_orders_data.describe()
-# %%
-dtypes = {"date_uuid": UUID,
-          "user_uuid": UUID,
-          "card_number": VARCHAR,
-          "store_code": VARCHAR,
-          "product_code": VARCHAR,
-          "product_quality": SMALLINT
-}
+    orders_data.upload_to_db(dtypes)
 
-# haven't checked this but should work:
-orders_data.upload_to_db(cleaned_orders_data, dtypes)
-# %%
-# ditto:
-for column in ['card_number', 'store_code', 'product_code']:
-  orders_data.set_varchar_integer_to_max_length_of_column(column)
-# %%
+    for column in ['card_number', 'store_code', 'product_code']:
+      orders_data.set_varchar_integer_to_max_length_of_column(column)
+
+    orders_data.print_data_types_of_columns_in_database_table()
+
+# tried running set primary key and got integrity error - which was correct because I shouldn't have been setting the primary key on this table
+# consider making all these fields non-nullable....
+
