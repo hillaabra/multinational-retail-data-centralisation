@@ -76,45 +76,45 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         setattr(self, 'cleaned_data', sd_df)
 
+if __name__ == "__main__":
 
+    stores_data = StoresData()
 
-# %%
-stores_data = StoresData()
-stores_data.extract_data()
-cleaned_stores_data = stores_data.clean_extracted_data()
-# I got an error code when testing this 429 - I've surpassed my rate limit - try another time.
-# %%
-cleaned_stores_data.info()
-# %%
+    stores_data.extract_data()
+
+    stores_data.clean_extracted_data()
+
 # instructions to change the location columns where they're null to N/A - I'd already done this
 # in the data_cleaning stage
 # instructions to merge one of the two latitude  columns into the other so that you have one latitude columns
 # I'd already deleted one of the columns at the data cleaning stage which had no meaningful values
-# %%
 
-# In theory the rest should work like so:
 
-dtypes = {"longitude": FLOAT, # currently "real" - this stores single-precision only (32bit) - FLOAT changes this to FLOAT which represents the double-precision datatype (64bit)
-          "locality": VARCHAR(255), # currently text
-          "store_code": VARCHAR, # currently text, set length to max needed after upload
-          "staff_numbers": SMALLINT, # I already had it going in as smallint
-          "opening_date": DATE, # currently 'timestamp without timezone' as I had casted it to datetime in Pandas - should I have left as string?
-          "store_type": VARCHAR(255), # currently text, varchar(255) NULLABLE requested - already nullable in current form - check it stays that way
-          "latitude": FLOAT, # currently "real"
-          "country_code": VARCHAR, # currently text, set length to max needed after upload
-          "continent": VARCHAR(255) # currently text
-          }
+    # dtypes = {"longitude": FLOAT, # currently "real" - this stores single-precision only (32bit) - FLOAT changes this to FLOAT which represents the double-precision datatype (64bit)
+    #           "locality": VARCHAR(255), # currently text
+    #           "store_code": VARCHAR, # currently text, set length to max needed after upload
+    #           "staff_numbers": SMALLINT, # I already had it going in as smallint
+    #           "opening_date": DATE, # currently 'timestamp without timezone' as I had casted it to datetime in Pandas - should I have left as string?
+    #           "store_type": VARCHAR(255), # currently text, varchar(255) NULLABLE requested - already nullable in current form - check it stays that way
+    #           "latitude": FLOAT, # currently "real"
+    #           "country_code": VARCHAR, # currently text, set length to max needed after upload
+    #           "continent": VARCHAR(255) # currently text
+    #           }
 
-stores_data.upload_to_db(cleaned_stores_data, dtypes)
-# %%
-for column in ['store_code', 'country_code']:
-  stores_data.set_varchar_integer_to_max_length_of_column(column)
-# %%
+    dtypes = {"locality": VARCHAR(255), # currently text
+              "opening_date": DATE, # currently 'timestamp without timezone' as I had casted it to datetime in Pandas - should I have left as string?
+              "store_type": VARCHAR(255), # currently text, varchar(255) NULLABLE requested - already nullable in current form - check it stays that way
+              "continent": VARCHAR(255) # currently text
+              }
+
+    stores_data.upload_to_db(dtypes)
+
+    for column in ['store_code', 'country_code']:
+      stores_data.set_varchar_integer_to_max_length_of_column(column)
+
+    # this sets the primary key as the column in common with orders_table
+    stores_data.set_primary_key_column()
+
 # NOTES FOR LATER:
-
-# ditto about 'opening_date' - should I have kept this as a string?
-
-# should I have kept my floats at single precision to save space? should I have specified an n with FLOAT(n)?
-
 # in the instructions, only one column (store_type) was requested to be nullable - but all my columns are nullable
 # is this an issue?
