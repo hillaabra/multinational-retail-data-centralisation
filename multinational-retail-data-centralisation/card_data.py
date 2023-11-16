@@ -1,6 +1,6 @@
 # %%
 import pandas as pd
-from pandas.tseries.offsets import MonthEnd
+# from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
 from data_extraction import DataExtractor
@@ -80,7 +80,7 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         setattr(self, 'cleaned_data', card_data_df)
 
-
+# %%
 if __name__ == '__main__':
     card_data = CardData()
     card_data.extract_data()
@@ -91,3 +91,8 @@ if __name__ == '__main__':
 
     for column in ['card_number', 'expiry_date', 'card_provider']:
         card_data.set_varchar_integer_to_max_length_of_column(column)
+
+    # this sets the primary key column to the column name that the table has in column with orders_table
+    card_data.set_primary_key_column()
+
+# %%
