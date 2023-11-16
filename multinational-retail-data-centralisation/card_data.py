@@ -1,11 +1,13 @@
+# %%
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
+from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
 from data_extraction import DataExtractor
 from data_cleaning import DataCleaning
 from database_utils import DatabaseTableConnector
 
-
+# %%
 class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
     def __init__(self):
         try:
@@ -40,16 +42,16 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         return cd_df
 
-    # see if it would work to cast to datetime64[M] without using MonthEnd etc.
-    @staticmethod
-    def _convert_expiry_date_to_datetime(cd_df: pd.DataFrame) -> pd.DataFrame:
+    # apparently this wasn't required- expiry date wanted as varchar
+    # @staticmethod
+    # def _convert_expiry_date_to_datetime(cd_df: pd.DataFrame) -> pd.DataFrame:
 
-        cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
+    #     cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
 
-        # convert the dates to datetime
-        cd_df['expiry_date'] = cd_df['expiry_date'] + MonthEnd(0)
+    #     # convert the dates to datetime
+    #     cd_df['expiry_date'] = cd_df['expiry_date'] + MonthEnd(0)
 
-        return cd_df
+    #     return cd_df
 
     #@staticmethod
     #def _convert_payment_confirmation_date_to_datetime(cd_df):
@@ -67,7 +69,8 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
         # clean up card_number column, and remove NaN values
         card_data_df = self._clean_card_number_data(card_data_df)
 
-        card_data_df = self._convert_expiry_date_to_datetime(card_data_df)
+        # apparently this step wasn't wanted - data requested to be cast as varchar
+        # card_data_df = self._convert_expiry_date_to_datetime(card_data_df)
 
         self._cast_columns_to_datetime64(card_data_df, ['date_payment_confirmed'], 'mixed', 'coerce', parse_first=True)
         # card_data_df = self._convert_payment_confirmation_date_to_datetime(card_data_df) - remove this static method if above works...
@@ -78,11 +81,13 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
         setattr(self, 'cleaned_data', card_data_df)
 
 
+if __name__ == '__main__':
+    card_data = CardData()
+    card_data.extract_data()
+    card_data.clean_extracted_data()
 
+    dtypes = {'card_number': VARCHAR, 'expiry_date': VARCHAR, 'date_payment_confirmed': DATE, 'card_provider': VARCHAR}
+    card_data.upload_to_db(dtypes)
 
-
-
-
-
-
-
+    for column in ['card_number', 'expiry_date', 'card_provider']:
+        card_data.set_varchar_integer_to_max_length_of_column(column)
