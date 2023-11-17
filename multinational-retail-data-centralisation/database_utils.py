@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import yaml
 
 import psycopg2
+# from psycopg2.errors import UniqueViolation, InvalidTableDefinition etc? - error handling for SQL queries? / SQLAlchmey errors?
 from sqlalchemy import create_engine, inspect, text
 
 
@@ -129,7 +130,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         return is_in_db
 
      # method that takes in a Pandas DataFrame and table name to upload to as an argument
-    def upload_to_db(self, dtypes=None):
+    def upload_to_db(self, dtypes: dict = None):
         if self.table_in_db_at_init:
             user_input = input("This table already exists. Enter Y if you wish to continue. This will override the existing table.")
             if user_input == 'Y' and self.cleaned_data is not None:
@@ -159,11 +160,12 @@ class DatabaseTableConnector(LocalDatabaseConnector):
             result = conn.execute(text(query)).fetchone() # this is returned as a tuple (e.g. (12, 0))
         return result[0] # index to get just the numeric value
 
-    def set_varchar_integer_to_max_length_of_column(self, column_name: str):
-        max_length = self._get_max_length_of_table_column(column_name)
-        query = f'ALTER TABLE {self.table_name} ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
-        with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            conn.execute(text(query))
+    def set_varchar_type_limit_to_max_char_length_of_columns(self, column_names: list[str]):
+        for column_name in column_names:
+            max_length = self._get_max_length_of_table_column(column_name)
+            query = f'ALTER TABLE {self.table_name} ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
+            with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+                conn.execute(text(query))
 
     def print_data_types_of_columns_in_database_table(self):
         query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix, datetime_precision, udt_name, is_nullable FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{self.table_name}';"
@@ -188,9 +190,10 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     def set_primary_key_column(self):
         column_name = self.return_column_in_common_with_orders_table()
         query1 = f'ALTER TABLE "{self.table_name}" ALTER COLUMN "{column_name}" SET NOT NULL;'
-        query2 = f'ALTER TABLE "{self.table_name}" ADD PRIMARY KEY ("{column_name}");'
+        query2 = f'ALTER TABLE "{self.table_name}" ADD PRIMARY KEY IF NOT EXISTS ("{column_name}");'
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             conn.execute(text(query1))
             conn.execute(text(query2))
+
 
 
