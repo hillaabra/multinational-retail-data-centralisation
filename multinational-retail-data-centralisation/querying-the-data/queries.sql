@@ -96,7 +96,7 @@ WITH revenue_per_store AS (
             dim_products ON orders_table.product_code = dim_products.product_code
     GROUP BY
             store_code
-    ), revenue_by_store_type AS (
+), revenue_by_store_type AS (
         SELECT
                 store_type,
                 ROUND(SUM(total_revenue)::numeric,2) as total_sales_per_store
@@ -106,7 +106,7 @@ WITH revenue_per_store AS (
                 dim_store_details ON revenue_per_store.store_code = dim_store_details.store_code
         GROUP BY
                 store_type
-    )
+)
 SELECT
         store_type, total_sales_per_store AS total_sales,
         ROUND(((total_sales_per_store/(SELECT SUM(total_sales_per_store) FROM revenue_by_store_type))*100)::numeric,2) AS "percentage_total(%)"
@@ -123,17 +123,21 @@ ORDER BY
 -- The company stakeholders want assurances that the company has been doing well recently.
 -- Find which months in which years have had the most sales historically.
 
-SELECT SUM((ROUND(dim_products.product_price::numeric,2) * orders_table.product_quantity)) AS total_sales,
-          year,
-          month
-  FROM
-          orders_table
-    JOIN
+SELECT
+        SUM((ROUND(dim_products.product_price::numeric,2) * orders_table.product_quantity)) AS total_sales,
+        year,
+        month
+FROM
+        orders_table
+JOIN
         dim_products ON orders_table.product_code = dim_products.product_code
-    JOIN
+JOIN
         dim_date_times ON orders_table.date_uuid = dim_date_times.date_uuid
-    GROUP BY year, month
-    ORDER BY total_sales DESC LIMIT 10;
+GROUP BY
+        year, month
+ORDER BY
+        total_sales DESC
+LIMIT 10;
 
 
 -- 7. What is the staff headcount?
