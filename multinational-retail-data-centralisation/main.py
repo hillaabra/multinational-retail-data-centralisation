@@ -56,9 +56,9 @@ for dataset_instance in dataset_instances:
     if re.match(r'^dim', dataset_instance.table_name):
       dataset_instance.set_primary_key_column()
       primary_key_column = dataset_instance.return_column_in_common_with_orders_table()
-      orders_table_query1 = f'ALTER TABLE "orders_table" ALTER COLUMN "{primary_key_column}" SET NOT NULL'
+      orders_table_query1 = f'ALTER TABLE orders_table ALTER COLUMN "{primary_key_column}" SET NOT NULL'
       dataset_instance.update_db(orders_table_query1)
-      orders_table_query2 = f'ALTER TABLE "orders_table" ADD CONSTRAINT fk_{primary_key_column} FOREIGN KEY ("{primary_key_column}")\
+      orders_table_query2 = f'ALTER TABLE orders_table ADD CONSTRAINT fk_{primary_key_column} FOREIGN KEY ("{primary_key_column}")\
                               REFERENCES {dataset_instance.table_name} ("{primary_key_column}");'
       dataset_instance.update_db(orders_table_query2)
 
