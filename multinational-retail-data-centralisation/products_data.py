@@ -1,4 +1,3 @@
-# %%
 import re
 
 import pandas as pd
@@ -9,7 +8,6 @@ from data_extraction import DataExtractor
 from database_utils import DatabaseTableConnector
 
 
-# %%
 class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     def __init__(self):
         try:
@@ -23,7 +21,7 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     @staticmethod
     def _convert_product_weights_to_kg_float(pd_df: pd.DataFrame) -> pd.DataFrame:
 
-        def helper(weight_str: str):
+        def helper(weight_str: str) -> float | str:
             # first catchs the strings in the format'{num1} x {num2}g'
             if re.fullmatch(r'\d+\s*x\s*\d+\.?\d*g', weight_str):
                 # splits the string along the 'x' into a list of two string values
@@ -84,41 +82,23 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         self._cast_columns_to_datetime64(pd_df, ['date_added'], '%Y-%m-%d', 'raise', parse_first=True)
 
         setattr(self, 'cleaned_data', pd_df)
+        setattr(self, 'dtypes_for_upload', {'date_added': DATE, 'uuid': UUID})
 
-# %%
-# %%
-if __name__ == "__main__":
-    products_data = ProductsData()
-    products_data.extract_data()
-    products_data.clean_extracted_data()
+    # method to add weight_class column
+    def add_weight_class_column_to_db_table(self) -> None:
 
-    dtypes = {'date_added': DATE, 'uuid': UUID}
-    products_data.upload_to_db(dtypes=dtypes)
+        query = "ALTER TABLE dim_products\
+            ADD COLUMN weight_class VARCHAR(14);"
 
-    query = "ALTER TABLE dim_products\
-                ADD COLUMN weight_class VARCHAR(14);"
-    products_data.update_db(query)
+        self.update_db(query)
 
-    query2 = "UPDATE dim_products\
-                SET weight_class = CASE\
-                    WHEN weight < 2 THEN 'Light'\
-                    WHEN weight < 40 THEN 'Mid_Sized'\
-                    WHEN weight < 140 THEN 'Heavy'\
-                    ELSE 'Truck_Required'\
-                END;"
-    products_data.update_db(query2)
+        query2 = "UPDATE dim_products\
+                    SET weight_class = CASE\
+                        WHEN weight < 2 THEN 'Light'\
+                        WHEN weight < 40 THEN 'Mid_Sized'\
+                        WHEN weight < 140 THEN 'Heavy'\
+                        ELSE 'Truck_Required'\
+                    END;"
 
-    for column in ['EAN', 'product_code']:
-        products_data.set_varchar_integer_to_max_length_of_column(column)
+        self.update_db(query2)
 
-    query3 = 'ALTER TABLE dim_products RENAME removed TO still_available;'
-    products_data.update_db(query3)
-
-    query4 = "ALTER TABLE dim_products ALTER Still_available TYPE bool \
-                USING CASE \
-                    WHEN Still_available = 'Still_avaliable' THEN TRUE \
-                    ELSE FALSE END;"
-    products_data.update_db(query4)
-
-    # this sets the primary key column to the column name that the table has in common with orders_table
-    products_data.set_primary_key_column()
