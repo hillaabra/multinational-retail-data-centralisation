@@ -11,9 +11,15 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
     def __init__(self):
         try:
           DataExtractor.__init__(self, source_type='AWS_RDS_resource', source_location='orders_table')
-          DatabaseTableConnector.__init__(self, table_name='orders_table')
+          DatabaseTableConnector.__init__(self, table_name='orders_table',\
+                                           dtypes_for_upload={"date_uuid": UUID,
+                                                            "user_uuid": UUID,
+                                                            "card_number": VARCHAR,
+                                                            "store_code": VARCHAR,
+                                                            "product_code": VARCHAR,
+                                                            "product_quality": SMALLINT})
         except Exception:
-          print("Something went wrong initialising the OrdersData child class")
+          print("Something went wrong initialising the OrdersData child class.")
 
     def clean_extracted_data(self) -> None:
 
@@ -29,28 +35,13 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         setattr(self, 'cleaned_data', od_df)
 
+    # redefining this method from the DatabaseTableConnector class - it applies to all other tables
+    # in the schema other than orders_table
+    def return_column_in_common_with_orders_table(self) -> None:
+        print(f"Error: This method shouldn't be used on the orders_table.")
 
-# %%
-if __name__ == "__main__":
-    orders_data = OrdersData()
-    orders_data.extract_data()
-    orders_data.clean_extracted_data()
-
-    dtypes = {"date_uuid": UUID,
-              "user_uuid": UUID,
-              "card_number": VARCHAR,
-              "store_code": VARCHAR,
-              "product_code": VARCHAR,
-              "product_quality": SMALLINT
-    }
-
-    orders_data.upload_to_db(dtypes)
-
-    for column in ['card_number', 'store_code', 'product_code']:
-      orders_data.set_varchar_integer_to_max_length_of_column(column)
-
-    orders_data.print_data_types_of_columns_in_database_table()
-
-# tried running set primary key and got integrity error - which was correct because I shouldn't have been setting the primary key on this table
-# consider making all these fields non-nullable....
+    # redefining this method from the DatabaseTableConnector class - it applies to all other tables
+    # in the schema other than orders_table
+    def set_primary_key_column(self) -> None:
+        print(f"Error: This method shouldn't be used on the orders_table.")
 
