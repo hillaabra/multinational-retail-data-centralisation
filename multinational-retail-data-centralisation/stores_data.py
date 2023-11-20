@@ -16,7 +16,7 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     def clean_extracted_data(self) -> None:
 
-        sd_df = self.extracted_data.copy()
+        sd_df = self._extracted_data.copy()
 
         # index column not correctly handled in download
         # from API, so dropping redundant column named 'index'

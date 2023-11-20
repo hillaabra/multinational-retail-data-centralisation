@@ -18,7 +18,7 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
     # errors with dates, incorrectly typed values and rows filled with the wrong info)
     def clean_extracted_data(self):
 
-        ud_df = self.extracted_data.copy()
+        ud_df = self._extracted_data.copy()
 
         # Set index column
         ud_df.set_index('index', inplace=True)

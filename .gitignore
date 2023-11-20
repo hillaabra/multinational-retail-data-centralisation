@@ -3,3 +3,4 @@ __pycache__/
 
 multinational-retail-data-centralisation/.credentials/
 multinational-retail-data-centralisation/products.csv
+multinational_retail_data_centralisation.session.sql

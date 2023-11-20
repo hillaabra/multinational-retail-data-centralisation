@@ -45,7 +45,7 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     def clean_extracted_data(self) -> None:
 
-        card_data_df = self.extracted_data.copy()
+        card_data_df = self._extracted_data.copy()
 
         # clean up card_number column, and remove NaN values
         card_data_df = self._clean_card_number_data(card_data_df)

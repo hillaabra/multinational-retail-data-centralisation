@@ -53,7 +53,7 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     # method to clean product data
     def clean_extracted_data(self) -> None:
 
-        pd_df = self.extracted_data.copy()
+        pd_df = self._extracted_data.copy()
 
         # remove rows with NaN values in 'weight' - these rows have no meaningful data
         pd_df = self._remove_rows_with_nan_values_in_specified_column(pd_df, 'weight')

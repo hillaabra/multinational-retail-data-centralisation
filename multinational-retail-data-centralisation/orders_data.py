@@ -17,7 +17,7 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     def clean_extracted_data(self) -> None:
 
-        od_df = self.extracted_data.copy()
+        od_df = self._extracted_data.copy()
 
         od_df.set_index('level_0', inplace=True)
 
