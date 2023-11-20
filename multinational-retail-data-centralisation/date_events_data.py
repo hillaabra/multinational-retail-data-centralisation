@@ -1,11 +1,10 @@
-# %%
 from sqlalchemy.dialects.postgresql import UUID, VARCHAR
 
 from data_cleaning import DataCleaning
 from data_extraction import DataExtractor
 from database_utils import DatabaseTableConnector
 
-# %%
+
 class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     def __init__(self):
         try:
@@ -24,26 +23,13 @@ class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         self._cast_columns_to_string(de_df, ['date_uuid'])
 
-        # apparently I didn't need to do this:
-        de_df['timestamp'] = (de_df[['year', 'month', 'day']].agg('-'.join, axis=1) + ' ' + de_df['timestamp']).astype('datetime64[s]')
-        self._rename_columns(de_df, {'timestamp': 'datetime'})
-
-        # apparently I needed to keep these columns as text
-        # self._drop_columns(de_df, ['month', 'year', 'day'])
+        # combining timestamp, year, month and day columns into a 'datetime' column
+        de_df['datetime'] = (de_df[['year', 'month', 'day']].agg('-'.join, axis=1) + ' ' + de_df['timestamp']).astype('datetime64[s]')
 
         setattr(self, 'cleaned_data', de_df)
-
-
-
-# %%
-if __name__ == '__main__':
-
-    date_events = DateEventsData()
-    date_events.extract_data()
-    date_events.clean_extracted_data()
-    dtypes = {'month': VARCHAR, 'day': VARCHAR, 'year': VARCHAR, 'time_period': VARCHAR, 'date_uuid': UUID}
-    date_events.upload_to_db(dtypes=dtypes)
-    for column in ['month', 'day', 'year', 'time_period']:
-        date_events.set_varchar_integer_to_max_length_of_column(column)
-    date_events.set_primary_key_column()
+        setattr(self, 'dtypes_for_upload', {'month': VARCHAR,
+                                            'day': VARCHAR,
+                                            'year': VARCHAR,
+                                            'time_period': VARCHAR,
+                                            'date_uuid': UUID})
 
