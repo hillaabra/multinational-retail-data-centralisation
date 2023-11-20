@@ -1,12 +1,10 @@
-# %%
-from sqlalchemy.dialects.postgresql import DATE, FLOAT, SMALLINT, VARCHAR
+from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
 from data_extraction import DataExtractor
 from data_cleaning import DataCleaning
 from database_utils import DatabaseTableConnector
 
 
-# %%
 class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     def __init__(self):
@@ -75,46 +73,9 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         self._cast_columns_to_datetime64(sd_df, ['opening_date'], 'mixed', 'raise')
 
         setattr(self, 'cleaned_data', sd_df)
+        setattr(self, 'dtypes_for_upload', {"locality": VARCHAR(255),
+                                            "opening_date": DATE,
+                                            "store_type": VARCHAR(255),
+                                            "continent": VARCHAR(255)
+                                            })
 
-if __name__ == "__main__":
-
-    stores_data = StoresData()
-
-    stores_data.extract_data()
-
-    stores_data.clean_extracted_data()
-
-# instructions to change the location columns where they're null to N/A - I'd already done this
-# in the data_cleaning stage
-# instructions to merge one of the two latitude  columns into the other so that you have one latitude columns
-# I'd already deleted one of the columns at the data cleaning stage which had no meaningful values
-
-
-    # dtypes = {"longitude": FLOAT, # currently "real" - this stores single-precision only (32bit) - FLOAT changes this to FLOAT which represents the double-precision datatype (64bit)
-    #           "locality": VARCHAR(255), # currently text
-    #           "store_code": VARCHAR, # currently text, set length to max needed after upload
-    #           "staff_numbers": SMALLINT, # I already had it going in as smallint
-    #           "opening_date": DATE, # currently 'timestamp without timezone' as I had casted it to datetime in Pandas - should I have left as string?
-    #           "store_type": VARCHAR(255), # currently text, varchar(255) NULLABLE requested - already nullable in current form - check it stays that way
-    #           "latitude": FLOAT, # currently "real"
-    #           "country_code": VARCHAR, # currently text, set length to max needed after upload
-    #           "continent": VARCHAR(255) # currently text
-    #           }
-
-    dtypes = {"locality": VARCHAR(255), # currently text
-              "opening_date": DATE, # currently 'timestamp without timezone' as I had casted it to datetime in Pandas - should I have left as string?
-              "store_type": VARCHAR(255), # currently text, varchar(255) NULLABLE requested - already nullable in current form - check it stays that way
-              "continent": VARCHAR(255) # currently text
-              }
-
-    stores_data.upload_to_db(dtypes)
-
-    for column in ['store_code', 'country_code']:
-      stores_data.set_varchar_integer_to_max_length_of_column(column)
-
-    # this sets the primary key as the column in common with orders_table
-    stores_data.set_primary_key_column()
-
-# NOTES FOR LATER:
-# in the instructions, only one column (store_type) was requested to be nullable - but all my columns are nullable
-# is this an issue?
