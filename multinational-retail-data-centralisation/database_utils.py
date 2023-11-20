@@ -159,7 +159,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     # method to return the maximum character length of the values in a column
     def _get_max_char_length_in_column(self, column_name: str) -> int:
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            query = f'SELECT MAX(LENGTH("{column_name}")) FROM {self.table_name};'
+            query = f'SELECT MAX(LENGTH("{column_name}")) FROM "{self.table_name}";'
             result = conn.execute(text(query)).fetchone() # this is returned as a tuple (e.g. (12, 0))
         return result[0] # index to get just the numeric value
 
@@ -168,7 +168,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     def set_varchar_type_limit_to_max_char_length_of_columns(self, column_names: list[str]) -> None:
         for column_name in column_names:
             max_length = self._get_max_char_length_in_column(column_name)
-            query = f'ALTER TABLE {self.table_name} ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
+            query = f'ALTER TABLE "{self.table_name}" ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
             with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
                 conn.execute(text(query))
 
@@ -212,5 +212,8 @@ class DatabaseTableConnector(LocalDatabaseConnector):
                 conn.execute(text(query1))
                 conn.execute(text(query2))
 
-
+    # method to rename column of table in database
+    def rename_column_in_db_table(self, original_column_name, target_column_name) -> None:
+        query = f'ALTER TABLE {self.table_name} RENAME "{original_column_name}" TO "{target_column_name}";'
+        self.update_db(query)
 
