@@ -11,13 +11,7 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
     def __init__(self):
         try:
           DataExtractor.__init__(self, source_type='AWS_RDS_resource', source_location='orders_table')
-          DatabaseTableConnector.__init__(self, table_name='orders_table',\
-                                           dtypes_for_upload={"date_uuid": UUID,
-                                                            "user_uuid": UUID,
-                                                            "card_number": VARCHAR,
-                                                            "store_code": VARCHAR,
-                                                            "product_code": VARCHAR,
-                                                            "product_quality": SMALLINT})
+          DatabaseTableConnector.__init__(self, table_name='orders_table')
         except Exception:
           print("Something went wrong initialising the OrdersData child class.")
 
@@ -34,6 +28,12 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
         self._cast_columns_to_integer(od_df, ['index', 'product_quantity'], 'raise')
 
         setattr(self, 'cleaned_data', od_df)
+        setattr(self, 'dtypes_for_upload', {"date_uuid": UUID,
+                                            "user_uuid": UUID,
+                                            "card_number": VARCHAR,
+                                            "store_code": VARCHAR,
+                                            "product_code": VARCHAR,
+                                            "product_quality": SMALLINT})
 
     # redefining this method from the DatabaseTableConnector class - it applies to all other tables
     # in the schema other than orders_table
