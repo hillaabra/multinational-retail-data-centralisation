@@ -1,4 +1,63 @@
-# multinational-retail-data-centralisation
+# Multinational Retail Data Centralisation
+
+*Software Engineering & Data Manipulation Project - [AiCore](https://www.theaicore.com/) (November 2023)*
+
+The brief for this project was to build a centralised data solution for a multinational organisation, whose sales data was spread across many different data sources.
+
+Once the database was in place, I conducted data analysis to extract valuable insights for the company from the newly centralised data. The results demonstrate how the new data solution gives the client the power to make informed business decisions by enabling complex cross-examination of its large datasets from one centralised location.
+
+![Static Badge](https://img.shields.io/badge/Skills%20%26%20Knowledge-A8B78B) ![Static Badge](https://img.shields.io/badge/Software%20Design-8A2BE2) ![Static Badge](https://img.shields.io/badge/Object%20Oriented%20Programming-8A2BE2) ![Static Badge](https://img.shields.io/badge/Webscraping-8A2BE2) ![Static Badge](https://img.shields.io/badge/Algorithms-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Structures-8A2BE2) ![Static Badge](https://img.shields.io/badge/AWS-8A2BE2) ![Static Badge](https://img.shields.io/badge/API%20Requests-8A2BE2) ![Static Badge](https://img.shields.io/badge/Error%20Handling-8A2BE2) ![Static Badge](https://img.shields.io/badge/Regular%20Expressions-8A2BE2) ![Static Badge](https://img.shields.io/badge/Command%20Line-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Cleaning-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Storage%20Optimisation-8A2BE2)  ![Static Badge](https://img.shields.io/badge/STAR--schema%20Database-8A2BE2)
+
+![Static Badge](https://img.shields.io/badge/Languages,%20Tools%20%26%20Libraries-A8B78B) ![Static Badge](https://img.shields.io/badge/Python-8A2BE2) ![Static Badge](https://img.shields.io/badge/SQL-8A2BE2) ![Static Badge](https://img.shields.io/badge/Pandas-8A2BE2) ![Static Badge](https://img.shields.io/badge/NumPy-8A2BE2) ![Static Badge](https://img.shields.io/badge/SQLAlchemy-8A2BE2) ![Static Badge](https://img.shields.io/badge/PostgreSQL-8A2BE2) ![Static Badge](https://img.shields.io/badge/boto3-8A2BE2) ![Static Badge](https://img.shields.io/badge/AWS%20CLI-8A2BE2) ![Static Badge](https://img.shields.io/badge/pgAdmin%204-8A2BE2) ![Static Badge](https://img.shields.io/badge/Tabula-8A2BE2) ![Static Badge](https://img.shields.io/badge/Requests-8A2BE2) ![Static Badge](https://img.shields.io/badge/PyYAML-8A2BE2) ![Static Badge](https://img.shields.io/badge/JSON-8A2BE2) ![Static Badge](https://img.shields.io/badge/os.path-8A2BE2) ![Static Badge](https://img.shields.io/badge/dateutil-8A2BE2) ![Static Badge](https://img.shields.io/badge/SQLTools-8A2BE2) ![Static Badge](https://img.shields.io/badge/VS%20Code-8A2BE2) ![Static Badge](https://img.shields.io/badge/Git%20and%20GitHub-8A2BE2)
+
+
+## Table of Contents
+- Project Overview
+- Database Schema
+- Installation Instructions
+- File structure
+- Usage
+- Licence Information
+
+## Project Overview
+
+The main implementation of the project is a Python program that extracts, cleans and imports the different datasets into a PostgreSQL database that is organised according to a STAR-based database schema for optimised data storage and access.
+
+The database is produced in three phases:
+
+1.  Extracting the large datasets from multiple and varied data sources, including AWS RDS databases, AWS S3 buckets and API endpoints, and of filetypes and datatypes including PDF, CSV, JSON and PostgreSQL databases. I used the following Python libraries to achieve this:
+    - boto3 to interact with S3
+    - PyYAML to read YAML database credentials
+    - Using requests and JSON libraries to request and retrieve from API with authentication details in header
+    - AWS CLI
+    - Tabula to read dataframes from PDF
+    - SQLAlchemy , pandas (+ json, os.path?), abc Python library for DatabaseConnector class abstraction.
+
+2. Cleaning the extracted data using pandas and numpy, regex and dateutil.parser: removing rows with null values, .....
+
+3. Uploading the cleaned datasets to the PostgreSQL database, and finalising the database schema by type- and down-casting table columns, editing and creating columns, and adding key constraints. All of these measures serve to optimise the data storage and access.
+
+The final phase of the project leverages the centralised data to extract valuable insights through data analysis:
+
+4.  I answered a series of questions about the company's sales data using SQL. I coded and ran these queries through an IDE connecting to the PostgreSQL database using a driver (SQLTools). The results of these queries provide some concrete examples of the kind of complex data analytics this new database schema makes possible.
+
+
+
+I wrote the the database-centralisation program with object-oriented-programming principles in mind. Each dataset is accessed and manipulated through its own child class which inherits methods from the DataExtractor, LocalDatabaseConnector and DataCleaning classes. This approach is geared towards developing a data centralisation model that is potentially scalable should the company wish to add more datasets to the database in future.
+
+
+Mention Cloud? Mention Git GitHub conda??
+
+Where should I include the diagram?
+
+## Installation Instructions
+
+## Usage Instructions
+
+## File Structure of the Project
+(maybe here I can talk about the class structure?)
+
+## License Information
 
 ## Tracking progress:
 
