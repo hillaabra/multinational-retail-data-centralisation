@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
-import yaml
 
 import psycopg2
 from sqlalchemy import create_engine, inspect, text
+import yaml
 
 # abstract parent class
 class DatabaseConnector(ABC):
 
     # initialise the DatabaseConnector child class with the yaml file containing the database credentials
     def __init__(self, credentials_yaml):
-       self.credentials_yaml = credentials_yaml
+       self.__credentials_yaml = credentials_yaml
        self.engine = self._init_db_engine()
        self.table_names_in_db = []
        self._set_db_table_names()
@@ -17,7 +17,7 @@ class DatabaseConnector(ABC):
     # Method that reads the credentials in the yaml file (saved as a property of the class)
     # and returns a dictionary of the credentials
     def _read_db_creds(self):
-      with open(self.credentials_yaml, 'r') as stream:
+      with open(self.__credentials_yaml, 'r') as stream:
           dict_db_creds = yaml.safe_load(stream)
 
       return dict_db_creds

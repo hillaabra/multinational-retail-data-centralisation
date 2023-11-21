@@ -124,7 +124,7 @@ class DataExtractor:
       else:
 
         print(response.status_code)
-        # should this return something, e.g. False?
+
 
     def _initialise_stores_df_loading(self, endpoint, header_dict) -> pd.DataFrame:
 
@@ -170,6 +170,9 @@ class DataExtractor:
 
         num_of_stores = self._get_number_of_stores("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores", header_dict)
 
-        df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, endpoint, header_dict)
+        if num_of_stores is not None:
+            df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, endpoint, header_dict)
 
-        return df_store_data
+            return df_store_data
+        else:
+           print("Error: Could not retrieve num_of_stores from API.")

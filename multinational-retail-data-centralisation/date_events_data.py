@@ -15,7 +15,7 @@ class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     def clean_extracted_data(self) -> None:
 
-        de_df = self.extracted_data.copy()
+        de_df = self._extracted_data.copy()
 
         de_df = self._remove_rows_where_column_values_not_in_defined_list(de_df, 'time_period', ['Evening', 'Morning', 'Midday', 'Late_Hours'])
 
