@@ -10,10 +10,16 @@ from database_utils import DatabaseTableConnector
 class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
     def __init__(self):
         try:
-          DataExtractor.__init__(self, source_type='pdf', source_location='https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf')
+          DataExtractor.__init__(self, source_data_url='https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf')
           DatabaseTableConnector.__init__(self, table_name='dim_card_details')
         except Exception:
             print("Something went wrong trying to initialise the CardData child class")
+
+    # define extract_data method from the abstract DataExtractor parent class
+    # this method assigns the dataframe of extracted data to the extracted_data attribute
+    def extract_data(self):
+        extracted_data_df = self._retrieve_pdf_data(self._source_data_url)
+        self._extracted_data = extracted_data_df
 
     def _clean_card_number_data(self, cd_df: pd.DataFrame) -> pd.DataFrame:
         # remove rows where column headings were transferred over as data values
@@ -43,6 +49,7 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     #     return cd_df
 
+    # redefining the abstract method
     def clean_extracted_data(self) -> None:
 
         card_data_df = self._extracted_data.copy()
@@ -63,4 +70,9 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
                                             'expiry_date': VARCHAR,
                                             'date_payment_confirmed': DATE,
                                             'card_provider': VARCHAR})
+
+    # redefining the abstract method
+    def extract_data(self):
+        df = self._retrieve_pdf_data(self._source_location)
+        self._extracted_data = df
 
