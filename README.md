@@ -27,20 +27,16 @@ The database is produced in three phases:
 
 1.  Extracting the large datasets from multiple and varied data sources, including AWS RDS databases, AWS S3 buckets and API endpoints, and of filetypes and datatypes including PDF, CSV, JSON and postgreSQL database tables.
 
-2. Cleaning the extracted data using pandas and numpy, regex and dateutil.parser: removing rows with null values, .....
+2. Cleaning the extracted data in Pandas: removing rows with entirely null or erroneous values, addressing typos in string values, such as non-numeric characters in alphanumeric fields, replacing isolated invalid values with NaN or Null, type- and downcasting columns. This was to ensure consistency in the data uploaded to the local server.
 
 3. Uploading the cleaned datasets to a local PostgreSQL database, and finalising the database schema by type- and down-casting table columns, editing and creating columns and adding key constraints. All of these measures serve to optimise the data storage and access.
 
 The final phase of the project leverages the centralised data to extract valuable insights through data analysis:
 
-4.  I answered a series of questions about the company's sales data using SQL. I coded and ran these queries through an IDE connecting to the PostgreSQL database using a driver (SQLTools). The results of these queries provide some concrete examples of the kind of complex data analytics this new database schema makes possible.
-
-
-
-I wrote the the database-centralisation program with object-oriented-programming principles in mind. Each dataset is accessed and manipulated through its own child class which inherits methods from the DataExtractor, LocalDatabaseConnector and DataCleaning classes. This approach is geared towards developing a data centralisation model that is potentially scalable should the company wish to add more datasets to the database in future.
-
+4.  I answered a series of questions about the company's sales data using SQL. The results of these queries, which can be seen [below](#findings-of-data-analysis), provide some concrete examples of the kind of complex data analytics this new database schema makes possible.
 
 ## File structure
+
 In the inner project directory, `multinational-retail-data-centralisation`, there are two sub-directories:
 - `db_setup` contains the scripts that implement the data solution:
     - The top-level utility classes are contained in the scripts:
@@ -72,23 +68,23 @@ If you have access to those credentials, follow these instructions to recreate t
 
 1. Recreate the miniconda environment required for the program to run using the `env.yaml` file provided:
 ```
-conda env create -f env.yaml -n multinational-retail-data-centralisation
+$ conda env create -f env.yaml -n multinational-retail-data-centralisation
 ```
-2. To set-up the database on your local machine, you'll first need to initialise a new postgresql database locally. I chose to use pgAdmin 4 as the graphical database management system for my database.
+2. To set-up the database on your local machine, you'll first need to initialise a new postgresql database locally. I chose to use pgAdmin 4 as the graphical database management system for this.
 
 Open your terminal in a directory of your choosing and clone this repository:
 ```
-git clone
+$ git clone https://github.com/hillaabra/multinational-retail-data-centralisation.git
 ```
 Get inside the `db_setup` directory:
 ```
-cd multinational-retail-data-centralisation/db_setup
+$ cd multinational-retail-data-centralisation/db_setup
 ```
 Create a `.credentials` folder in this directory to hold the credentials information.
 ```
-mkdir .credentials
+$ mkdir .credentials
 ```
-3. Using your preferred text editor, add a YAML file to this `.credentials` directory called `local_db_creds.yaml`. This will contain the credentials for the new database. The file should contain the following. Insert your own password, and the name of the database you created earlier.
+3. Using your preferred text editor, add a YAML file to this `.credentials` directory called `local_db_creds.yaml`. This will contain the credentials for the new database. The file should contain the following:
 ```
 DATABASE_TYPE: 'postgresql'
 DBAPI: 'psycopg2'
@@ -104,27 +100,27 @@ PORT: 5432
 
 6. If you're working from an IDE, make sure you've selected the miniconda environment created earlier as your interpreter path. If running the program from your computer's terminal, make sure you've activated the environment on the command line:
 ```
-conda activate multinational-retail-data-centralisation
+$ conda activate multinational-retail-data-centralisation
 ```
 7. You are now ready to install the database on your local postgres server. This can be done from inside the `db_setup` directory by running:
 ```
-python __main__.py
+$ python __main__.py
 ```
-Or from its parent directory the next level up, `multinational-retail-data-centralisation`, by running:
+ - Or, from its parent directory the next level up, `multinational-retail-data-centralisation`:
 ```
-python db_setup
+$ python db_setup
 ```
 ## Usage Instructions
 The completed database is composed of 5 dimension tables that related to a central single-fact table containing the organisations retail orders.
 
 ![The completed database ERD](readme-images/final-database-schema-erd.png)
 
-SQL queries can be run on the centralised data either wihin a graphical database management tool such as `pgAdmin 4`, from an IDE such as `VS Code` using a driver to connect to the database like VS Code's `SQLTools` extension, or from the command line using `psql`.
+SQL queries can be run on the centralised data from within your chosen graphical database management interface, e.g. `pgAdmin 4`, or from an IDE such as `VSCode` using a driver to connect to the database like VS Code's `SQLTools` extension, or from the command line using `psql`.
 See the [key findings](#findings-of-data-analysis) below for examples of the database in action.
 
 ## Findings of data analysis
 
-### How many stores does the business have and in which country?
+### 1. How many stores does the business have and in which country?
 The Operations Team wanted to know which countries they currently operate in and which country now has the most stores. The results showed their brick-and-mortar stores are located across the UK, Germany and the US, with most of their stores based in the UK.
 ```
 | country | total_no_stores |
@@ -133,7 +129,7 @@ The Operations Team wanted to know which countries they currently operate in and
 | DE      |             141 |
 | US      |              34 |
 ```
-### Which locations currently have the most stores?
+### 2. Which locations currently have the most stores?
 The business stakeholders were looking to close some stores before opening more in other locations. To help in their decision of where to close stores, they wanted to know which locations had the most stores at present.
 
 The query produced the following locations as having the most stores:
@@ -148,7 +144,7 @@ The query produced the following locations as having the most stores:
 | High Wycombe |              10 |
 | Rutherglen   |              10 |
 ```
-### Which months of the year produce the largest amounts of sales?
+### 3. Which months of the year produce the largest amounts of sales?
 To find out which months of the year have historically produced the most sales, I joined the products and date times dimensions tables onto the orders table and calculated the overal total revenues grouped by month.
 
 The results showed that the month which had historically produced the most sales revenue was August, followed by January, then October.
@@ -162,11 +158,11 @@ The results showed that the month which had historically produced the most sales
 |  645,741.70 |     7 |
 |  645,463.00 |     3 |
 ```
-### How many sales are happening online vs offline?
+### 4. How many sales are happening online vs offline?
 
-The company is looking to increase its online sales. They wanted to know how many sales were happening online vs offline. I calculated how many products have been sold and the amount of sales made (in GBP) for online and offline purchases across the companies sales data history.
+The company is looking to increase its online sales. They wanted to know how many sales were happening online compared to offline. I calculated how many products have been sold and the amount of sales made (in GBP) for online and offline purchases across the company's sales data history.
 
-The results showed that their offline sales produce over three times the number and total revenue of sales than their web store.
+The results showed that their offline sales jave produced over three times the number and total revenue of sales than their web store.
 
 ```
 | numbers_of_sales | product_quantity_count | location |
@@ -174,7 +170,7 @@ The results showed that their offline sales produce over three times the number 
 |           26,957 |                107,739 | Web      |
 |           93,166 |                374,047 | Offline  |
 ```
-### What percentage of sales come through each type of store?
+### 5. What percentage of sales come through each type of store?
 The sales team wanted to know which of the different store types generated the most revenue so that they could decide where to focus their efforts.
 I calculated the total sales revenue (in GBP) and the percentage of sales coming from each of the different store types.
 
@@ -187,9 +183,9 @@ I calculated the total sales revenue (in GBP) and the percentage of sales coming
 | Mall Kiosk  |   698,791.61 |                9.05 |
 | Outlet      |   631,804.81 |                8.18 |
 ```
-### Which month in which year produced the highest cost of sales?
+### 6. Which month in which year produced the highest cost of sales?
 The company stakeholders wanted assurances that the company has been doing well recently.
-I ran a query to find out which months in which years have had the most sales historically. (The latest sales data is from 2023.) The results show that none of the last three years feature in the company's most profitable months.
+I ran a query to find out which months in which years have had the most sales historically. (The latest sales data is from 2022.) The results show that none of the last three years feature in the company's most profitable months.
 ```
 | total_sales |  year | month |
 | ----------- | ----- | ----- |
@@ -204,7 +200,7 @@ I ran a query to find out which months in which years have had the most sales hi
 |   25,648.29 | 1,996 |     8 |
 |   25,614.54 | 2,000 |     1 |
 ```
-### What is the staff headcount?
+### 7. What is the staff headcount?
 The operations team wanted to know the overall staff numbers in each location around the world. I performed a query to determine the staff numbers in each of the countries the company sells in.
 
 ```
@@ -214,7 +210,7 @@ The operations team wanted to know the overall staff numbers in each location ar
 |               6,123 | DE           |
 |               1,384 | US           |
 ```
-### Which German store is selling the most?
+### 8. Which German store is selling the most?
 The sales team was looking to expand their territory in Germany. I ran a query to determine which type of store had generated the most sales in Germany across the company's sales history.
 ```
 |  total_sales | store_type  | country_code |
@@ -224,8 +220,10 @@ The sales team was looking to expand their territory in Germany. I ran a query t
 |   384,625.03 | Super Store | DE           |
 | 1,109,909.59 | Local       | DE           |
 ```
-### How quickly is the company making sales?
-The Sales Team wanted an accurate metric for how quickly the company is making sales. I determined the average time taken between each sale, grouped by year.
+*(For most of the results above, a query focussing on a window of more recent sales is likely to provide more actionable information, since these queries have been run on sales data spanning three decades.)*
+
+### 9. How quickly is the company making sales?
+The sales team wanted an accurate metric for how quickly the company is making sales. I determined the average time taken between each sale, grouped by year.
 ```
 |  year | actual_time_taken                                            |
 | ----- | ------------------------------------------------------------ |
@@ -263,4 +261,4 @@ The Sales Team wanted an accurate metric for how quickly the company is making s
 ```
 ## License Information
 
-This project is unlicensed.
+This project is currently unlicensed.
