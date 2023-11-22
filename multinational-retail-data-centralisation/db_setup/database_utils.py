@@ -4,19 +4,49 @@ import psycopg2
 from sqlalchemy import create_engine, inspect, text
 import yaml
 
-# abstract parent class
+
 class DatabaseConnector(ABC):
+    '''
+    An abstract base class providing functionality to subclasses
+    RDSDatabaseConnector and LocalDatabaseConnector.
+
+    Parameters:
+    ---------
+    credentials_yaml: str
+        Relative filepath to YAML file containing the subclass's
+        database credentials.
+
+    Attributes:
+    ----------
+    engine: sqlalchemy.engine.Engine
+        SQLAlchemy Engine object, used to provide connection to the
+        database.
+
+    table_names_in_db: list
+        List of table names existing in the database. Set by protected
+        method on intialisation.
+    '''
 
     # initialise the DatabaseConnector child class with the yaml file containing the database credentials
-    def __init__(self, credentials_yaml):
+    def __init__(self, credentials_yaml: str) -> None:
+       '''
+       See help(DatabaseConnector) for accurate signature
+       '''
        self.__credentials_yaml = credentials_yaml
        self.engine = self._init_db_engine()
        self.table_names_in_db = []
        self._set_db_table_names()
 
-    # Method that reads the credentials in the yaml file (saved as a property of the class)
-    # and returns a dictionary of the credentials
-    def _read_db_creds(self):
+    def _read_db_creds(self) -> dict:
+      '''
+      Protected; this method is used by the subclass to load
+      the database credentials from the filepath stored
+      as a private attribute of the class.
+
+      Returns:
+      -------
+      dict: Dictionary containing database credentials.
+      '''
       with open(self.__credentials_yaml, 'r') as stream:
           dict_db_creds = yaml.safe_load(stream)
 
@@ -26,31 +56,60 @@ class DatabaseConnector(ABC):
     # and LocalDatabaseConnector classes
     @abstractmethod
     def _init_db_engine(self):
+       '''
+       Protected; abstract method implemented in RDSDatabaseConnector and
+       LocalDatabaseConnector child classes.
+       '''
        pass
 
-    # method to set the table_names_in_db property to a list of the tables
-    # already in the database being connected to
-    def _set_db_table_names(self):
+    def _set_db_table_names(self) -> None:
+      '''
+      Protected, this method sets the table_names_in_db attribute of the class,
+      which is a list of tables already in the database being connected to.
+      '''
       inspector = inspect(self.engine)
       table_names = inspector.get_table_names()
       self.table_names_in_db = table_names
 
-    # method to return a list of the table names in the database being connected to
-    def list_db_table_names(self):
-        return self.table_names_in_db
+    def list_db_table_names(self) -> list:
+      '''
+      This method returns the table_names_in_db attribute of the class,
+      which is a list of tables recorded in the database being connected to.
+
+      Returns:
+      -------
+      list: A list of the table names in the database being connected to.
+      '''
+      return self.table_names_in_db
 
 
 # child class for methods relating to connecting to and extracting data
 # from the AWS RDS database used for this project
 class RDSDatabaseConnector(DatabaseConnector):
-
-    # instance of class initialised with the credentials supplied for the AWS RDS database, saved as a yaml file
+    '''
+    A child class extending DatabaseConnector, providing connection
+    to the AWS RDS database.
+    '''
+    # instance of class initialised with the filepath to the credentials YAML
+    # supplied for the AWS RDS database
     def __init__(self):
+       '''
+       See help(RDSDatabaseConnector) for accurate signature.
+       '''
        super().__init__('.credentials/remote_db_creds.yaml')
 
     # Method that reads the credentials from the return of _read_db_creds,
     # initialises and returns a sqlalchemy database engine
     def _init_db_engine(self):
+      '''
+      Protected; method that initialises and returns a SQLAlchemy engine
+      to be stored as an attribute of the class.
+
+      Returns:
+      -------
+      sqlalchemy.engine.Engine: a SQLAlchemy engine object to be used
+      for connecting to the AWS RDS database specified in the credentials.
+      '''
 
       dict_db_creds = self._read_db_creds()
 
@@ -69,14 +128,30 @@ class RDSDatabaseConnector(DatabaseConnector):
 
 # child class for methods relating to the postgresql database on my local server
 class LocalDatabaseConnector(DatabaseConnector):
+    '''
+    A child class extending DatabaseConnector, providing connection
+    to the postgreSQL database on the local server.
+    '''
 
-    # instance of class initialised with the credentials for the local postgresql database, saved as a yaml file
+    # instance of class initialised with the filepath to the credentials
+    # for the local postgresql database, saved as a yaml file
     def __init__(self):
+       '''
+       See help(LocalDatabaseConnector) for accurate signature.
+       '''
        super().__init__('.credentials/local_db_creds.yaml')
 
     # method to connect to local pgadmin database
     def _init_db_engine(self):
+      '''
+      Protected; method that initialises and returns a SQLAlchemy engine
+      to be stored as an attribute of the class.
 
+      Returns:
+      -------
+      sqlalchemy.engine.Engine: a SQLAlchemy engine object to be used
+      for connecting to the AWS RDS database specified in the credentials.
+      '''
       dict_db_creds = self._read_db_creds()
 
       DATABASE_TYPE = dict_db_creds['DATABASE_TYPE']
@@ -91,8 +166,17 @@ class LocalDatabaseConnector(DatabaseConnector):
 
       return engine
 
-    # method that takes in a query_text
-    def update_db(self, query_text: str):
+    def update_db(self, query_text: str) -> None:
+        '''
+        Method that executes a SQL query on the local PostgreSQL database;
+        updates the table_names_in_db attribute of the class after execution
+        of the query in case of created or deleted tables.
+
+        Arguments:
+        ----------
+        query_text: str
+            The SQL query to be performed provided as a string.
+        '''
         engine = self._init_db_engine()
         with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
           conn.execute(text(query_text))
@@ -103,16 +187,53 @@ class LocalDatabaseConnector(DatabaseConnector):
 # child class for methods relating to specific datasets/tables to be inputted into
 # or already in the postgresql database on my local server
 class DatabaseTableConnector(LocalDatabaseConnector):
+    '''
+    A child class extending LocalDatabaseConnector, to be inherited by
+    each dataset-specific class. Contains methods to interact with and modify
+    specific tables in the database.
 
-    def __init__(self, target_table_name, dtypes_for_upload = None):
+    Parameters:
+    ---------
+    target_table_name: str
+        The name of the table as it should be saved in the local database.
+
+    Attributes:
+    ----------
+    target_table_name: str
+        The name of the table as it should be, or is, saved in the local database.
+
+    _cleaned_data: None
+        Protected. Will be replaced with a pd.DataFrame after data cleaning.
+
+    table_in_db_at_init: bool
+        Boolean value set by _check_if_table_in_db() method. True if a table
+        by the name value of target_table_name is already in the database. False
+        if not.
+    '''
+
+    def __init__(self, target_table_name: str) -> None:
+       '''
+       See help(DatabaseTableConnector) for accurate signature.
+       '''
        super().__init__()
        self.target_table_name = target_table_name
        self._cleaned_data = None
        self.table_in_db_at_init = self._check_if_table_in_db()
-       self.dtypes_for_upload = dtypes_for_upload
 
     #method that checks if the table is in the db
     def _check_if_table_in_db(self) -> bool:
+        '''
+        Protected; method that checks if the value of the class attribute target_table_name
+        matches the name of a table that already exists in the database.
+        Used to set the table_in_db_at_init attribute of the class.
+        Prints warning method to console if it returns true.
+
+        Returns:
+        -------
+        bool: True if a table matching the value of the attribute target_table_name
+        is already in the local database. False if a table by that name does not already
+        exist there.
+        '''
         is_in_db = self.target_table_name in self.table_names_in_db
         if is_in_db:
           print(f"A table of the name {self.target_table_name} has already been uploaded to your local postgres sales_data database.")
@@ -121,6 +242,12 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     # method that uploads the _cleaned_data dataframe to the database
     # the cleaned data is stored as the _cleaned_data property of the dataset instance (initialised as None)
     def upload_to_db(self) -> None:
+        '''
+        Method that uploads the Pandas dataframe stored at the attribute
+        _cleaned_data to the local database. Prints message to console when upload attempt is
+        initialised and asks for user input if a table by the same name already exists so that the user
+        can choose whether to override the existing table.
+        '''
         print(f"Starting upload of {self.target_table_name} to local sales_data database.")
         # if table name assigned to this dataset already in the database on initialisation
         if self.table_in_db_at_init:
@@ -159,6 +286,19 @@ class DatabaseTableConnector(LocalDatabaseConnector):
 
     # method to return the maximum character length of the values in a column
     def _get_max_char_length_in_column(self, column_name: str) -> int:
+        '''
+        Protected; method used internally by set_varchar_type_limit_to_max_char_length_of_columns
+        method to get establish the maximum character length of the values in a specified column.
+
+        Arguments:
+        ---------
+        column_name: str
+            The name of the column to be checked.
+
+        Returns:
+        -------
+        int: The integer number representing the character length of the longest string in the column.
+        '''
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             query = f'SELECT MAX(LENGTH("{column_name}")) FROM "{self.target_table_name}";'
             result = conn.execute(text(query)).fetchone() # this is returned as a tuple (e.g. (12, 0))
@@ -167,6 +307,15 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     # method to cast columns to VARCHAR(?) where ? = the maximum character length of the values in the column
     # the columns are passed in as a list of strings
     def set_varchar_type_limit_to_max_char_length_of_columns(self, column_names: list[str]) -> None:
+        '''
+        Method to typecast columns in the list provided to VARCHAR(?), where `?` represents
+        the maximum character length required.
+
+        Arguments:
+        ---------
+        column_names: list[str]
+            A list of the column names in the table to be typecasted to VARCHAR(?)
+        '''
         for column_name in column_names:
             max_length = self._get_max_char_length_in_column(column_name)
             query = f'ALTER TABLE "{self.target_table_name}" ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
@@ -175,7 +324,12 @@ class DatabaseTableConnector(LocalDatabaseConnector):
 
     # method to print the data types of the columns
     def print_data_types_of_columns_in_database_table(self) -> None:
-        if self._check_if_table_in_db:
+        '''
+        Method that prints to the console the data types of the columns
+        of the table in the local database matching the value of the class attribute
+        target_table_name.
+        '''
+        if self._check_if_table_in_db():
             query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix,\
                     datetime_precision, udt_name, is_nullable FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{self.target_table_name}';"
             with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
@@ -188,8 +342,18 @@ class DatabaseTableConnector(LocalDatabaseConnector):
 
     # method to find the column the dataset has in common with orders_table,
     # to be used as the primary key
-    def return_column_in_common_with_orders_table(self) -> str | None:
-        if self._check_if_table_in_db:
+    def return_column_in_common_with_orders_table(self) -> str:
+        '''
+        Method used to find the column the dataset has in common with the central
+        table of the star-based schema, orders_table. This is used to identify
+        the column that should be assigned a primary key constraint in the local
+        database.
+
+        Returns:
+        -------
+        str: the name of the column that matches the name of a column in orders_table
+        '''
+        if self._check_if_table_in_db():
             query = f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS \
                         WHERE TABLE_NAME = '{self.target_table_name}' \
                         AND COLUMN_NAME != 'index' \
@@ -205,6 +369,9 @@ class DatabaseTableConnector(LocalDatabaseConnector):
 
     # method to set the primary key column of the table
     def set_primary_key_column(self) -> None:
+        '''
+        Method used to set the primary key column of the dimension table in the local database.
+        '''
         column_name = self.return_column_in_common_with_orders_table()
         if column_name is not None:
             query1 = f'ALTER TABLE "{self.target_table_name}" ALTER COLUMN "{column_name}" SET NOT NULL;'
@@ -214,7 +381,17 @@ class DatabaseTableConnector(LocalDatabaseConnector):
                 conn.execute(text(query2))
 
     # method to rename column of table in database
-    def rename_column_in_db_table(self, original_column_name, target_column_name) -> None:
+    def rename_column_in_db_table(self, original_column_name: str, target_column_name: str) -> None:
+        '''
+        Method used to rename a column of the table in the local database.
+
+        Arguments:
+        ---------
+        original_column_name: str
+            The name of the column in the table to be changed.
+        target_column_name: str
+            The name the column should be changed to.
+        '''
         query = f'ALTER TABLE {self.target_table_name} RENAME "{original_column_name}" TO "{target_column_name}";'
         self.update_db(query)
 
