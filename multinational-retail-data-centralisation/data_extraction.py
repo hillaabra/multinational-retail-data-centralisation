@@ -1,22 +1,22 @@
 import json
 import os.path
-import requests
+# import requests
 
 from abc import ABC, abstractmethod
 
 import boto3
 from botocore.exceptions import ClientError
 import pandas as pd
-import sqlalchemy
+# import sqlalchemy
 import tabula
 
 from database_utils import RDSDatabaseConnector
 
 class DataExtractor(ABC):
 
-    def __init__(self, source_location, extracted_data=None) -> None:
+    def __init__(self, source_data_url, extracted_data=None) -> None:
 
-        self._source_location = source_location # this could be the name of the table (e.g. orders_table for RDS resource)
+        self._source_data_url = source_data_url # this could be the name of the table (e.g. orders_table for RDS resource)
         self._extracted_data = extracted_data    # or the URI or URL or filepath etc...  (call this source_id instead?)
 
     @abstractmethod
@@ -115,69 +115,3 @@ class DataExtractor(ABC):
 
       return header_dict
 
-    # move this to stores?
-    # method to return the number of stores to extract from API
-    # @staticmethod
-    # def _get_number_of_stores(endpoint, header_dict) -> int:
-
-    #   response = requests.get(endpoint, headers=header_dict)
-
-    #   if response.status_code == 200:
-    #     num_of_stores = response.json()['number_stores']
-    #     return num_of_stores
-
-    #   else:
-
-    #     print(response.status_code)
-
-
-    # def _initialise_stores_df_loading(self, endpoint, header_dict) -> pd.DataFrame:
-
-    #     response = requests.get(f"{endpoint}0", headers=header_dict)
-
-    #     if response.status_code == 200:
-
-    #         store_data = response.json()
-    #         df_store_data = pd.DataFrame([store_data])
-    #         df_store_data.set_index('index', inplace=True)
-
-    #         return df_store_data
-
-    #     else:
-
-    #         print(response.status_code)
-    #         # return something here?
-
-    # def _add_remaining_stores_as_rows_to_df(self, df_store_data, num_of_stores, endpoint, header_dict) -> pd.DataFrame:
-
-    #     for i in range(1, num_of_stores):
-
-    #       response = requests.get(f"{endpoint}{i}", headers=header_dict)
-
-    #       if response.status_code == 200:
-
-    #         store_data = response.json()
-    #         df_new_store_data = pd.DataFrame([store_data])
-    #         df_store_data = pd.concat([df_store_data, df_new_store_data], ignore_index=True)
-
-    #       else:
-
-    #         print(response.status_code)
-
-    #     return df_store_data
-
-    # # method
-    # def _retrieve_stores_data(self, endpoint) -> pd.DataFrame:
-
-    #     header_dict = self.__retrieve_api_authorisation()
-
-    #     df_store_data = self._initialise_stores_df_loading(endpoint, header_dict)
-
-    #     num_of_stores = self._get_number_of_stores("https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores", header_dict)
-
-    #     if num_of_stores is not None:
-    #         df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, endpoint, header_dict)
-
-    #         return df_store_data
-    #     else:
-    #        print("Error: Could not retrieve num_of_stores from API.")
