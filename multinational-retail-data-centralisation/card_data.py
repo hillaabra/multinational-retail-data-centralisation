@@ -71,8 +71,4 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
                                             'date_payment_confirmed': DATE,
                                             'card_provider': VARCHAR})
 
-    # redefining the abstract method
-    def extract_data(self):
-        df = self._retrieve_pdf_data(self._source_location)
-        self._extracted_data = df
 
