@@ -10,7 +10,22 @@ from database_utils import DatabaseTableConnector
 
 # %%
 class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
+    '''
+    Represents the products data dataset and the methods used to extract,
+    clean, manipulate and upload it. Extends from DataExtractor, DataCleaning
+    and DatabaseTableConnector classes.
+
+    Attributes:
+    ----------
+    _target_table_name: str
+        'dim_products'
+    _source_data_s3_uri: str
+        Protected; AWS S3 URI of csv object (freely accessed with AWS subscription)
+    '''
     def __init__(self):
+        '''
+        See help(ProductsData) for an accurate signature
+        '''
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, target_table_name='dim_products')
@@ -20,6 +35,12 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     # define method from abstract base class to extract data from source
     def extract_data(self) -> None:
+        '''
+        Method inherited from abstract base class DataExtractor. Extracts the
+        source data to a Pandas DataFrame using the S3 object URI stored at
+        the _source_data_s3_uri attribute and saves the Pandas DataFrame to
+        the class's _extracted_data attribute.
+        '''
         extracted_data_df = self._extract_from_s3(self._source_data_s3_uri)
         self._extracted_data = extracted_data_df
 
@@ -27,7 +48,19 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     # it should take the products dataframe as an argument and return the products dataframe
     @staticmethod
     def _convert_product_weights_to_kg_float(pd_df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Protected; method used internally to convert the weight values
+        in the 'weight' column of the DataFrame to kilograms.
 
+        Arguments:
+        ---------
+        pd_df: pd.DataFrame
+            Pandas DataFrame being cleaned
+
+        Returns:
+        -------
+        pd.DataFrame: Pandas DataFrame being cleaned
+        '''
         def helper(weight_str: str) -> float | str:
             # first catchs the strings in the format'{num1} x {num2}g'
             if re.fullmatch(r'\d+\s*x\s*\d+\.?\d*g', weight_str):
@@ -59,7 +92,12 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     # define method from abstrat base class to clean product data
     def clean_extracted_data(self) -> None:
-
+        '''
+        Method inherited from abstract base class DataCleaning. Makes a copy of
+        the Pandas dataframe stored at the _extracted_data attribute and assigns, applies
+        cleaning methods to this copy of the dataframe, and assigns the dataframe
+        after cleaning to the class's _cleaned_data attribute.
+        '''
         pd_df = self._extracted_data.copy()
 
         # remove rows with NaN values in 'weight' - these rows have no meaningful data
@@ -93,7 +131,11 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     # method to add weight_class column
     def add_weight_class_column_to_db_table(self) -> None:
-
+        '''
+        Method that adds a 'weight_class' column to the dim_products table
+        in the local PostgreSQL database, which categorises the values of the
+        weight_class column to 'Light', 'Mid_Sized', 'Heavy' or 'Truck_Required'.
+        '''
         query = "ALTER TABLE dim_products\
             ADD COLUMN weight_class VARCHAR(14);"
 

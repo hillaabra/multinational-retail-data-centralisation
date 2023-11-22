@@ -1,4 +1,3 @@
-# %%
 import pandas as pd
 # from pandas.tseries.offsets import MonthEnd  <-- expiry date wanted imported as varchar
 from sqlalchemy.dialects.postgresql import DATE, VARCHAR
@@ -7,9 +6,24 @@ from data_cleaning import DataCleaning
 from data_extraction import DataExtractor
 from database_utils import DatabaseTableConnector
 
-# %%
+
 class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
+    '''
+    Represents the card data dataset and the methods used to extract,
+    clean, manipulate and upload it. Extends from DataExtractor, DataCleaning
+    and DatabaseTableConnector classes.
+
+    Attributes:
+    ----------
+    _target_table_name: str
+        'dim_card_details'
+    _source_data_url: str
+        Protected; URL to the dataset (publicly accessed)
+    '''
     def __init__(self):
+        '''
+        See help(CardData) for accurate signature.
+        '''
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, target_table_name = 'dim_card_details')
@@ -20,10 +34,29 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
     # define extract_data method from the abstract DataExtractor parent class
     # this method assigns the dataframe of extracted data to the extracted_data attribute
     def extract_data(self):
+        '''
+        Method inherited from abstract base class DataExtractor. Extracts the
+        source data using the _source_data_url attribute and saves the Pandas
+        DataFrame to the class's _extracted_data attribute.
+        '''
         extracted_data_df = self._retrieve_pdf_data(self._source_data_url)
         self._extracted_data = extracted_data_df
 
     def _clean_card_number_data(self, cd_df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Protected; method used internally to clean the data in the card_number column
+        of the extracted data.
+
+        Arguments:
+        ---------
+        cd_df: pd.DataFrame
+            The card_data dataframe.
+
+        Returns:
+        -------
+        cd_df: pd.DataFrame
+            The card_data dataframe after the cleaning of the card_number column.
+        '''
         # remove rows where column headings were transferred over as data values
         cd_df = self._remove_rows_with_specific_value_in_specified_column(cd_df, 'card_number', 'card_number')
 
@@ -53,6 +86,12 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     # redefining the abstract method
     def clean_extracted_data(self) -> None:
+        '''
+        Method inherited from abstract base class DataCleaning. Makes a copy of
+        the Pandas dataframe stored at the _extracted_data attribute and assigns, applies
+        cleaning methods to this copy of the dataframe, and assigns the dataframe
+        after cleaning to the class's _cleaned_data attribute.
+        '''
 
         card_data_df = self._extracted_data.copy()
 

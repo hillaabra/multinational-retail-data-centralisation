@@ -1,14 +1,28 @@
-# %%
 from sqlalchemy.dialects.postgresql import SMALLINT, UUID, VARCHAR
 
 from data_extraction import DataExtractor
 from data_cleaning import DataCleaning
 from database_utils import DatabaseTableConnector, RDSDatabaseConnector
 
-# %%
 
 class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
+    '''
+    Represents the orders data dataset, which is the single-source-of-truth
+    dataset at the centre of the database schema. Contains the methods used
+    to extract, clean, manipulate and upload this dataset. Extends from
+    DataExtractor, DataCleaning and DatabaseTableConnector classes.
+
+    Attributes:
+    ----------
+    _target_table_name: str
+        'orders_table'
+    _source_db_table_name: str
+        'orders_table', the table name as it appears in the AWS RDS database
+    '''
     def __init__(self) -> None:
+        '''
+        See help(OrdersData) for an accurate signature.
+        '''
         try:
             DataExtractor.__init__(self)
             DatabaseTableConnector.__init__(self, target_table_name='orders_table')
@@ -17,12 +31,24 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
            print("Something went wrong initialising the OrdersData child class.")
 
     def extract_data(self) -> None:
+        '''
+        Method inherited from abstract base class DataExtractor. Connects to the AWS RDS
+        Database by creating an instance of the RDSDatabaseConnector, and extracts the data
+        from the table by the name saved on the _source_db_table_name attribute to a Pandas
+        DataFrame. Saves the DataFrame containing the extracted data to the class's
+        _extracted_data attribute.
+        '''
         conn = RDSDatabaseConnector()
         extracted_data_df = self._read_rds_table(conn, self._source_db_table_name)
         self._extracted_data = extracted_data_df
 
     def clean_extracted_data(self) -> None:
-
+        '''
+        Method inherited from abstract base class DataCleaning. Makes a copy of
+        the Pandas dataframe stored at the _extracted_data attribute and assigns, applies
+        cleaning methods to this copy of the dataframe, and assigns the dataframe
+        after cleaning to the class's _cleaned_data attribute.
+        '''
         od_df = self._extracted_data.copy()
 
         od_df.set_index('level_0', inplace=True)
@@ -44,9 +70,17 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
     # redefining this method from the DatabaseTableConnector class - it applies to all other tables
     # in the schema other than orders_table
     def return_column_in_common_with_orders_table(self) -> None:
+        '''
+        Method that overrides behaviour of method defined in parent class.
+        Not to be used for this class.
+        '''
         print(f"Error: This method shouldn't be used on the orders_table.")
 
     # redefining this method from the DatabaseTableConnector class - it applies to all other tables
     # in the schema other than orders_table
     def set_primary_key_column(self) -> None:
+        '''
+        Method that overrides behaviour of method defined in parent class.
+        Not to be used for this class.
+        '''
         print(f"Error: This method shouldn't be used on the orders_table.")

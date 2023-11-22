@@ -1,4 +1,3 @@
-# %%
 import numpy as np
 from sqlalchemy.dialects.postgresql import DATE, UUID, VARCHAR
 
@@ -6,9 +5,24 @@ from data_cleaning import DataCleaning
 from data_extraction import DataExtractor
 from database_utils import DatabaseTableConnector, RDSDatabaseConnector
 
-# %%
+
 class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
+    '''
+    Represents the user data dataset and the methods used to extract,
+    clean, manipulate and upload it. Extends from DataExtractor, DataCleaning
+    and DatabaseTableConnector classes.
+
+    Attributes:
+    ----------
+    _target_table_name: str
+        'dim_users'
+    _source_db_table_name: str
+        'legacy_users', the table name as it appears in the AWS RDS database
+    '''
     def __init__(self):
+        '''
+        See help(UserData) for accurate signature
+        '''
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, target_table_name='dim_users')
@@ -18,6 +32,13 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
     # define method from abstract base class to extract data
     def extract_data(self):
+        '''
+        Method inherited from abstract base class DataExtractor. Connects to the AWS RDS
+        Database by creating an instance of the RDSDatabaseConnector, and extracts the data
+        from the table by the name saved on the _source_db_table_name attribute to a Pandas
+        DataFrame. Saves the DataFrame containing the extracted data to the class's
+        _extracted_data attribute.
+        '''
         conn = RDSDatabaseConnector()
         extracted_data_df = self._read_rds_table(conn, self._source_db_table_name)
         self._extracted_data = extracted_data_df
@@ -25,7 +46,12 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
     # Method to clean the user data (look for NULL values,
     # errors with dates, incorrectly typed values and rows filled with the wrong info)
     def clean_extracted_data(self):
-
+        '''
+        Method inherited from abstract base class DataCleaning. Makes a copy of
+        the Pandas dataframe stored at the _extracted_data attribute and assigns, applies
+        cleaning methods to this copy of the dataframe, and assigns the dataframe
+        after cleaning to the class's _cleaned_data attribute.
+        '''
         ud_df = self._extracted_data.copy()
 
         # Set index column

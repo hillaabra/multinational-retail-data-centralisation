@@ -1,4 +1,3 @@
-# %%
 import requests
 import pandas as pd
 
@@ -8,10 +7,27 @@ from data_extraction import DataExtractor
 from data_cleaning import DataCleaning
 from database_utils import DatabaseTableConnector
 
-# %%
-class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
+class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
+    '''
+    Represents the stores data dataset and the methods used to extract,
+    clean, manipulate and upload it. Extends from DataExtractor, DataCleaning
+    and DatabaseTableConnector classes.
+
+    Attributes:
+    ----------
+    _target_table_name: str
+        Protected; 'dim_store_details'
+    _store_details_endpoint: str
+        Protected; the API endpoint which retrieves the details of every store the business has. The endpoint is missing
+        the '{num}' at the end, where {num} relates to each numbered endpoint.
+    _num_of_stores_endpoint: str
+        Protected; the API endpoint which retrieves the number of stores the business has.
+    '''
     def __init__(self):
+        '''
+        See help(StoresData) for an accurate signature
+        '''
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, target_table_name='dim_store_details')
@@ -22,10 +38,21 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
           print("Something went wrong initialising the StoresData child class")
 
     # method to return the number of stores to extract from API
-    @staticmethod
-    def _get_number_of_stores(endpoint, header_dict) -> int:
+    def _get_number_of_stores(self, header_dict: dict) -> int:
+      '''
+      Protected; a method used internally to retrieve the number of stores
+      belonging to the business from an API.
 
-      response = requests.get(endpoint, headers=header_dict)
+      Arguments:
+      ---------
+      header_dict: dict
+        dictionary header containing the API authentication key
+
+      Returns:
+      -------
+      int: the number of stores
+      '''
+      response = requests.get(self._num_of_stores_endpoint, headers=header_dict)
 
       if response.status_code == 200:
         num_of_stores = response.json()['number_stores']
@@ -36,9 +63,23 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         print(response.status_code)
 
     # method to get extract first row of store data from API and return it in a dataframe
-    def _initialise_stores_df_loading(self, endpoint, header_dict) -> pd.DataFrame:
+    def _initialise_stores_df_loading(self, header_dict: dict) -> pd.DataFrame:
+        '''
+        Protected; method that begins the loading of the stores data from the API
+        into a Pandas DataFrame.
 
-        response = requests.get(f"{endpoint}0", headers=header_dict)
+        Arguments:
+        ---------
+        header_dict: dict
+          dictionary header containing the API authentication key
+
+        Returns:
+        -------
+        pd.DataFrame: a Pandas DataFrame containing the details of the first
+        store in the dataset located at "{self._store_details_endpoint}0"
+        '''
+
+        response = requests.get(f"{self._store_details_endpoint}0", headers=header_dict)
 
         if response.status_code == 200:
 
@@ -49,16 +90,32 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
             return df_store_data
 
         else:
+            print("HTTPS response code: ", response.status_code)
 
-            print(response.status_code)
-             # return something here?
 
     # method to extract the remaining rows of store data and add them to the created dataframe
-    def _add_remaining_stores_as_rows_to_df(self, df_store_data, num_of_stores, endpoint, header_dict) -> pd.DataFrame:
+    def _add_remaining_stores_as_rows_to_df(self, df_store_data: pd.DataFrame, num_of_stores: int, header_dict: dict) -> pd.DataFrame:
+        '''
+        Protected; method used internally to finish loading from the API
+        the remaining store details to the initialised DataFrame
+        containing the first row value of the dataset.
 
+        Arguments:
+        ---------
+        df_store_data: pd.DataFrame
+            Pandas DataFrame containing the first row of stores data.
+        num_of_stores: int
+            The number of total stores, retrieved previously from the API endpoint
+        header_dict: dict
+            Header dictionary containing the API authentication key
+
+        Returns:
+        -------
+        pd.DataFrame: Pandas DataFrame containing the stores data
+        '''
         for i in range(1, num_of_stores):
 
-          response = requests.get(f"{endpoint}{i}", headers=header_dict)
+          response = requests.get(f"{self._store_details_endpoint}{i}", headers=header_dict)
 
           if response.status_code == 200:
 
@@ -68,21 +125,28 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
           else:
 
-            print(response.status_code)
+            print("HTTPS response code: ", response.status_code)
 
         return df_store_data
 
     # method to retrieve the stores data from the API endpoint
     def _retrieve_stores_data(self) -> pd.DataFrame:
+        '''
+        Protected; method using internally to retrive the stores data
+        from the API endpoints and load them into a Pandas DataFrame.
 
+        Returns:
+        -------
+        pd.DataFrame: Pandas DataFrame of the extracted stores data
+        '''
         header_dict = self._retrieve_api_authorisation(self.__api_credentials_filepath)
 
-        df_store_data = self._initialise_stores_df_loading(self._store_details_endpoint, header_dict)
+        df_store_data = self._initialise_stores_df_loading(header_dict)
 
-        num_of_stores = self._get_number_of_stores(self._num_of_stores_endpoint, header_dict)
+        num_of_stores = self._get_number_of_stores(header_dict)
 
         if num_of_stores is not None:
-            df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, self._store_details_endpoint, header_dict)
+            df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, header_dict)
 
             return df_store_data
         else:
@@ -91,12 +155,22 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
     # defining abstract method from DataExtractor base class
     # this method assigns the dataframe of extracted data to the extracted_data attribute
     def extract_data(self) -> None:
-       extracted_data_df = self._retrieve_stores_data()
-       self._extracted_data = extracted_data_df
+      '''
+      Method inherited from abstract base class DataExtractor. Extracts the
+      source data to a Pandas DataFrame and saves the DataFrame to the
+      class's _extracted_data attribute.
+      '''
+      extracted_data_df = self._retrieve_stores_data()
+      self._extracted_data = extracted_data_df
 
     # defining abstract method from DataCleaning abstract base class
     def clean_extracted_data(self) -> None:
-
+        '''
+        Method inherited from abstract base class DataCleaning. Makes a copy of
+        the Pandas dataframe stored at the _extracted_data attribute and assigns, applies
+        cleaning methods to this copy of the dataframe, and assigns the dataframe
+        after cleaning to the class's _cleaned_data attribute.
+        '''
         sd_df = self._extracted_data.copy()
 
         # index column not correctly handled in download

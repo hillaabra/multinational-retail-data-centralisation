@@ -11,16 +11,49 @@ import tabula
 
 
 class DataExtractor(ABC):
+    '''
+    Abstract Base Class containing the abstract method to be
+    implemented and the static methods to be used by the inheriting
+    dataset-related child classes.
 
+    Parameters:
+    ----------
+    extracted_data: pd.DataFrame
+        default value: None, can be initialised with pre-existing
+        DataFrame for testing purposes.
+
+    Attributes:
+    ----------
+    _extracted_data: pd.DataFrame
+        Protected; initialised as None by default, but will contain a
+        Pandas DataFrame of the data extracted from its source
+    '''
     def __init__(self, extracted_data: pd.DataFrame = None) -> None:
         self._extracted_data = extracted_data
 
     @abstractmethod
     def extract_data(self):
-       pass
+      '''
+      Abstract method for extracting the data, to be implemented in the
+      inheriting dataset-related child classes.
+      '''
+      pass
 
     @staticmethod
-    def _retrieve_pdf_data(pdf_url) -> pd.DataFrame:
+    def _retrieve_pdf_data(pdf_url: str) -> pd.DataFrame:
+      '''
+      Protected; method that uses Tabula to read and load a table from a PDF file to
+      a Pandas DataFrame.
+
+      Arguments:
+      ---------
+      pdf_url: str
+          The URL for the PDF to be read.
+
+      Returns:
+      -------
+      pd.DataFrame: a Pandas DataFrame containing the extracted dataset.
+      '''
 
       df = tabula.read_pdf(pdf_url, lattice=True, pages='all', multiple_tables=False)[0]
 
@@ -28,13 +61,42 @@ class DataExtractor(ABC):
 
     @staticmethod
     def _extract_data_from_json_url(json_url) -> pd.DataFrame:
+      '''
+      Protected; method that uses Pandas to read and load data from a
+      JSON file to a Pandas DataFrame.
 
-        df = pd.read_json(json_url)
+      Arguments:
+      ---------
+      json_url: str
+          The URL for the JSON file to be read.
 
-        return df
+      Returns:
+      -------
+      pd.DataFrame: a Pandas DataFrame containing the extracted dataset.
+      '''
+      df = pd.read_json(json_url)
+
+      return df
 
     @staticmethod
-    def _read_rds_table(rds_db_connector_instance, rds_table_name) -> pd.DataFrame:
+    def _read_rds_table(rds_db_connector_instance, rds_table_name: str) -> pd.DataFrame:
+      '''
+      Protected; method that reads and loads a table from the AWS RDS database
+      to a Pandas DataFrame.
+
+      Arguments:
+      ---------
+      rds_db_connector_instance: RDSDatabaseConnector.class.object
+          An instance of the RDSDatabaseConnector class, used to
+          initialise an engine to connect to the AWS RDS database.
+
+      rds_table_name: str
+          The name of the table in the AWS RDS database to be extracted.
+
+      Returns:
+      -------
+      pd.DataFrame: a Pandas DataFrame containing the extracted dataset.
+      '''
       engine = rds_db_connector_instance._init_db_engine()
       engine.connect()
       df = pd.read_sql_table(rds_table_name, engine)
@@ -42,12 +104,24 @@ class DataExtractor(ABC):
       return df
 
     @staticmethod
-    def _extract_from_s3(s3_uri) -> pd.DataFrame:
+    def _extract_from_s3(s3_uri: str) -> pd.DataFrame:
+      '''
+      Protected; method that reads and loads a csv file from an AWS S3 bucket
+      to a Pandas DataFrame.
 
+      Arguments:
+      ---------
+      s3_uri: str
+        The URI of the AWS S3 object.
+
+      Returns:
+      -------
+      pd.DataFrame: a Pandas DataFrame containing the extracted dataset.
+      '''
       s3_path_parts = s3_uri.split('://')[1].split('/')
-
       bucket_name = s3_path_parts[0]
       object_name = s3_path_parts[1]
+
       file_name = object_name
 
       # if object has already been downloaded, give option of using file already in repo instead of downloading again
@@ -76,7 +150,7 @@ class DataExtractor(ABC):
               s3 = boto3.client('s3')
               s3.download_file(bucket_name, object_name, file_name)
               products_df = pd.read_csv(file_name, index_col=[0])
-              # also write code to remove csv file from project repo?
+              # TO DO: also write code to remove csv file from project repo?
               return products_df
 
             except ClientError as e:
@@ -90,8 +164,21 @@ class DataExtractor(ABC):
 
 
     @staticmethod
-    def _retrieve_api_authorisation(api_credentials_filepath) -> dict:
+    def _retrieve_api_authorisation(api_credentials_filepath: str) -> dict:
+      '''
+      Protected; method used internally that returns a header dictionary
+      with the API authorisation credentials stored in a JSON file.
 
+      Arguments:
+      ---------
+      api_credentials_filepath: str
+          A filepath to to JSON file storing the API credentials.
+
+      Returns:
+      -------
+      dict: Header dictionary with authorisation credentials for use in
+      API request.
+      '''
       with open(api_credentials_filepath, 'r') as read_file:
 
         header_dict = json.load(read_file)
