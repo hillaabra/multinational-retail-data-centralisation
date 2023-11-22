@@ -24,6 +24,9 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         See help(CardData) for accurate signature.
         '''
+        DataExtractor.__init__(self)
+        DatabaseTableConnector.__init__(self, target_table_name = 'dim_card_details')
+        self._source_data_url = 'https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, target_table_name = 'dim_card_details')
