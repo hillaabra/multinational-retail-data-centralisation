@@ -187,44 +187,14 @@ WITH lead_datetimes AS (
             year,
             datetime,
             LEAD(datetime, 1) OVER (
-                    PARTITION BY year
-                    ORDER BY datetime
-            ) AS next_datetime
+                    ORDER BY datetime DESC
+            ) AS lead_datetime
     FROM
             dim_date_times
 )
 SELECT
         year,
-        AVG(next_datetime - datetime) AS actual_time_taken
-FROM
-        lead_datetimes
-GROUP BY
-        year
-ORDER BY
-        actual_time_taken DESC;
-
--- 9a. Trying the above using the original separate columns - same results
-
-WITH datetimes AS (
-    SELECT
-            year,
-            ((make_date(CAST(year as integer), CAST(month as integer), CAST(day as integer))) + CAST(timestamp AS time)) as datetime
-    FROM
-            dim_date_times
-), lead_datetimes AS (
-    SELECT
-            year,
-            datetime,
-            LEAD(datetime, 1) OVER (
-                    PARTITION BY year
-                    ORDER BY datetime
-            ) AS next_datetime
-    FROM
-            datetimes
-)
-SELECT
-        year,
-        AVG(next_datetime - datetime) AS actual_time_taken
+        AVG(datetime - lead_datetime) AS actual_time_taken
 FROM
         lead_datetimes
 GROUP BY
