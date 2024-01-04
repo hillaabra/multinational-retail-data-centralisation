@@ -225,40 +225,42 @@ The sales team was looking to expand their territory in Germany. I ran a query t
 ### 9. How quickly is the company making sales?
 The sales team wanted an accurate metric for how quickly the company is making sales. I determined the average time taken between each sale, grouped by year.
 ```
-|  year | actual_time_taken                                            |
-| ----- | ------------------------------------------------------------ |
-| 2,013 | {"hours":2,"minutes":17,"seconds":13,"milliseconds":712.533} |
-| 1,993 | {"hours":2,"minutes":15,"seconds":35,"milliseconds":481.806} |
-| 2,002 | {"hours":2,"minutes":13,"seconds":39,"milliseconds":915.69}  |
-| 2,008 | {"hours":2,"minutes":13,"seconds":3,"milliseconds":770.202}  |
-| 2,022 | {"hours":2,"minutes":13,"seconds":2,"milliseconds":3.698}    |
-| 1,995 | {"hours":2,"minutes":13,"milliseconds":53.404}               |
-| 2,016 | {"hours":2,"minutes":12,"seconds":50,"milliseconds":458.354} |
-| 2,011 | {"hours":2,"minutes":12,"seconds":19,"milliseconds":240.745} |
-| 2,020 | {"hours":2,"minutes":11,"seconds":58,"milliseconds":890.476} |
-| 2,012 | {"hours":2,"minutes":11,"seconds":47,"milliseconds":533.684} |
-| 2,021 | {"hours":2,"minutes":11,"seconds":44,"milliseconds":547.326} |
-| 2,009 | {"hours":2,"minutes":11,"seconds":18,"milliseconds":622.594} |
-| 2,007 | {"hours":2,"minutes":11,"seconds":8,"milliseconds":918.642}  |
-| 2,010 | {"hours":2,"minutes":11,"seconds":7,"milliseconds":808.24}   |
-| 1,999 | {"hours":2,"minutes":11,"seconds":5,"milliseconds":102.046}  |
-| 1,996 | {"hours":2,"minutes":11,"milliseconds":84.763}               |
-| 2,000 | {"hours":2,"minutes":10,"seconds":55,"milliseconds":241.739} |
-| 2,019 | {"hours":2,"minutes":10,"seconds":40,"milliseconds":488.303} |
-| 1,994 | {"hours":2,"minutes":10,"seconds":38,"milliseconds":998.756} |
-| 2,018 | {"hours":2,"minutes":10,"seconds":37,"milliseconds":13.92}   |
-| 2,001 | {"hours":2,"minutes":10,"seconds":34,"milliseconds":39.781}  |
-| 2,004 | {"hours":2,"minutes":10,"seconds":29,"milliseconds":774.281} |
-| 2,006 | {"hours":2,"minutes":10,"seconds":15,"milliseconds":623.512} |
-| 2,014 | {"hours":2,"minutes":10,"seconds":5,"milliseconds":558.445}  |
-| 1,997 | {"hours":2,"minutes":9,"seconds":46,"milliseconds":934.207}  |
-| 2,015 | {"hours":2,"minutes":9,"seconds":36,"milliseconds":903.552}  |
-| 1,992 | {"hours":2,"minutes":9,"seconds":32,"milliseconds":62.921}   |
-| 2,005 | {"hours":2,"minutes":9,"milliseconds":174.073}               |
-| 2,017 | {"hours":2,"minutes":8,"seconds":39,"milliseconds":348.444}  |
-| 2,003 | {"hours":2,"minutes":8,"seconds":36,"milliseconds":218.084}  |
-| 1,998 | {"hours":2,"minutes":8,"seconds":6,"milliseconds":538.161}   |
+| year | actual_time_taken                                            |
+| ---- | ------------------------------------------------------------ |
+| 2013 | {"hours":2,"minutes":17,"seconds":12,"milliseconds":300.182} |
+| 1993 | {"hours":2,"minutes":15,"seconds":35,"milliseconds":857.327} |
+| 2002 | {"hours":2,"minutes":13,"seconds":50,"milliseconds":412.529} |
+| 2022 | {"hours":2,"minutes":13,"seconds":6,"milliseconds":313.993}  |
+| 2008 | {"hours":2,"minutes":13,"seconds":2,"milliseconds":803.08}   |
+| 2008 | {"hours":2,"minutes":13,"seconds":2,"milliseconds":803.08}   |
+| 1995 | {"hours":2,"minutes":12,"seconds":58,"milliseconds":972.925} |
+| 2016 | {"hours":2,"minutes":12,"seconds":58,"milliseconds":124.905} |
+| 2011 | {"hours":2,"minutes":12,"seconds":19,"milliseconds":17.623}  |
+| 2020 | {"hours":2,"minutes":12,"seconds":3,"milliseconds":535.204}  |
+| 2012 | {"hours":2,"minutes":11,"seconds":58,"milliseconds":69.104}  |
+| 2021 | {"hours":2,"minutes":11,"seconds":56,"milliseconds":199.548} |
+| 2009 | {"hours":2,"minutes":11,"seconds":18,"milliseconds":413.543} |
+| 2010 | {"hours":2,"minutes":11,"seconds":13,"milliseconds":985.272} |
+| 2007 | {"hours":2,"minutes":11,"seconds":8,"milliseconds":939.122}  |
+| 1999 | {"hours":2,"minutes":11,"seconds":6,"milliseconds":563.482}  |
+| 1996 | {"hours":2,"minutes":10,"seconds":59,"milliseconds":163.022} |
+| 2000 | {"hours":2,"minutes":10,"seconds":54,"milliseconds":498.758} |
+| 2019 | {"hours":2,"minutes":10,"seconds":47,"milliseconds":79.871}  |
+| 1994 | {"hours":2,"minutes":10,"seconds":43,"milliseconds":552.599} |
+| 2001 | {"hours":2,"minutes":10,"seconds":38,"milliseconds":953.766} |
+| 2018 | {"hours":2,"minutes":10,"seconds":35,"milliseconds":807.157} |
+| 2004 | {"hours":2,"minutes":10,"seconds":32,"milliseconds":996.037} |
+| 2006 | {"hours":2,"minutes":10,"seconds":20,"milliseconds":328.044} |
+| 2014 | {"hours":2,"minutes":10,"seconds":7,"milliseconds":507.304}  |
+| 1997 | {"hours":2,"minutes":9,"seconds":58,"milliseconds":199.308}  |
+| 2015 | {"hours":2,"minutes":9,"seconds":37,"milliseconds":417.016}  |
+| 1992 | {"hours":2,"minutes":9,"seconds":32,"milliseconds":62.921}   |
+| 2005 | {"hours":2,"minutes":8,"seconds":59,"milliseconds":660.53}   |
+| 2017 | {"hours":2,"minutes":8,"seconds":46,"milliseconds":828.025}  |
+| 2003 | {"hours":2,"minutes":8,"seconds":45,"milliseconds":491.916}  |
+| 1998 | {"hours":2,"minutes":8,"seconds":7,"milliseconds":956.363}   |
 ```
-## License Information
 
-This project is currently unlicensed.
+## Licnse information
+
+Ths projec is crrently unlicensed.
