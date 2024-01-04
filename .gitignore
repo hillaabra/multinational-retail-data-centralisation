@@ -1,8 +1,8 @@
-__pycache__/
+*/__pycache__/
 .DS_Store
 .vscode/
 
-multinational-retail-data-centralisation/db_setup/.credentials/
-multinational-retail-data-centralisation/db_setup/products.csv
+db_setup/.credentials/
+db_setup/products.csv
 multinational_retail_data_centralisation.session.sql
 

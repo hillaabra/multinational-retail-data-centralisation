@@ -1,11 +1,11 @@
 import re
 
-from card_data import CardData
-from date_events_data import DateEventsData
-from orders_data import OrdersData
-from products_data import ProductsData
-from stores_data import StoresData
-from user_data import UserData
+from .datasets.card_data import CardData
+from .datasets.date_events_data import DateEventsData
+from .datasets.orders_data import OrdersData
+from .datasets.products_data import ProductsData
+from .datasets.stores_data import StoresData
+from .datasets.user_data import UserData
 
 
 if __name__ == "__main__":

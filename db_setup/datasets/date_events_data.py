@@ -1,8 +1,8 @@
 from sqlalchemy.dialects.postgresql import UUID, VARCHAR
 
-from data_cleaning import DataCleaning
-from data_extraction import DataExtractor
-from database_utils import DatabaseTableConnector
+from ..data_cleaning import DataCleaning
+from ..data_extraction import DataExtractor
+from ..database_utils import DatabaseTableConnector
 
 
 class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):

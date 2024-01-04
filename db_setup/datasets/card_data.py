@@ -2,9 +2,9 @@ import pandas as pd
 # from pandas.tseries.offsets import MonthEnd  <-- expiry date wanted imported as varchar
 from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
-from data_cleaning import DataCleaning
-from data_extraction import DataExtractor
-from database_utils import DatabaseTableConnector
+from ..data_cleaning import DataCleaning
+from ..data_extraction import DataExtractor
+from ..database_utils import DatabaseTableConnector
 
 
 class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):

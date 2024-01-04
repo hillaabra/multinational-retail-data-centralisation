@@ -3,9 +3,9 @@ import pandas as pd
 
 from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
-from data_extraction import DataExtractor
-from data_cleaning import DataCleaning
-from database_utils import DatabaseTableConnector
+from ..data_extraction import DataExtractor
+from ..data_cleaning import DataCleaning
+from ..database_utils import DatabaseTableConnector
 
 
 class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):

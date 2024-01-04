@@ -1,8 +1,8 @@
 from sqlalchemy.dialects.postgresql import SMALLINT, UUID, VARCHAR
 
-from data_extraction import DataExtractor
-from data_cleaning import DataCleaning
-from database_utils import DatabaseTableConnector, RDSDatabaseConnector
+from ..data_extraction import DataExtractor
+from ..data_cleaning import DataCleaning
+from ..database_utils import DatabaseTableConnector, RDSDatabaseConnector
 
 
 class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):

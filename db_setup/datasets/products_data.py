@@ -4,9 +4,9 @@ import re
 import pandas as pd
 from sqlalchemy.dialects.postgresql import DATE, UUID
 
-from data_cleaning import DataCleaning
-from data_extraction import DataExtractor
-from database_utils import DatabaseTableConnector
+from ..data_cleaning import DataCleaning
+from ..data_extraction import DataExtractor
+from ..database_utils import DatabaseTableConnector
 
 # %%
 class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):

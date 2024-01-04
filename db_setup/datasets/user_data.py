@@ -1,9 +1,9 @@
 import numpy as np
 from sqlalchemy.dialects.postgresql import DATE, UUID, VARCHAR
 
-from data_cleaning import DataCleaning
-from data_extraction import DataExtractor
-from database_utils import DatabaseTableConnector, RDSDatabaseConnector
+from ..data_cleaning import DataCleaning
+from ..data_extraction import DataExtractor
+from ..database_utils import DatabaseTableConnector, RDSDatabaseConnector
 
 
 class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
