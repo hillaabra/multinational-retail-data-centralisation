@@ -19,7 +19,7 @@
 * [Findings of Data Analysis](#findings-of-data-analysis)
 * [Licence](#licence)
 
-## Project Overview
+## [Project Overview](#project-overview)
 
 The main implementation of the project is a Python program that extracts, cleans and imports the different datasets into a PostgreSQL database. The resulting database is organised according to a star-based schema for optimised data storage and access.
 
@@ -35,7 +35,7 @@ The final phase of the project leverages the centralised data to extract valuabl
 
 4.  I answered a series of questions about the company's sales data using SQL. The results of these queries, which can be seen [below](#findings-of-data-analysis), provide some concrete examples of the kind of complex data analytics this new database schema makes possible.
 
-## File Structure
+## [File Structure](#file-structure)
 
 In the inner project directory, `multinational-retail-data-centralisation`, there are two sub-directories:
 - `db_setup` contains the scripts that implement the data solution:
@@ -61,7 +61,7 @@ Missing from the repo, but required for the successful execution of the `db_setu
 
 For more details on running the database setup on your local machine, see [Installation](#installation) below.
 
-## Installation
+## [Installation](#installation)
 Please note you will not be able to set up this database if you are not a member of AiCore, since three of the datasets are private resources and require access to private authentication credentials.
 
 If you have access to those credentials, follow these instructions to recreate the database on your local machine:
@@ -110,7 +110,7 @@ $ python __main__.py
 ```
 $ python db_setup
 ```
-## Usage Instructions
+## [Usage](#usage)
 The completed database is composed of 5 dimension tables that relate to a single-source-of-truth table at its centre, which contains the definitive reference data for the organisation's retail orders.
 
 ![The completed database ERD](readme-images/final-database-schema-erd.png)
@@ -118,7 +118,7 @@ The completed database is composed of 5 dimension tables that relate to a single
 SQL queries can be run on the centralised data from within your chosen graphical database management interface, e.g. `pgAdmin 4`, or from an IDE such as `VSCode` using a driver to connect to the database like VS Code's `SQLTools` extension, or from the command line using `psql`.
 See the [key findings](#findings-of-data-analysis) below for examples of the database in action.
 
-## Findings of Data Analysis
+## [Findings of Data Analysis](#findings-of-data-analysis)
 
 ### 1. How many stores does the business have and in which country?
 The operations team wanted to know which countries they currently operate in and which country now has the most stores. The results showed their brick-and-mortar stores are located across the UK, Germany and the US, with most of their stores based in the UK.
@@ -261,6 +261,6 @@ The sales team wanted an accurate metric for how quickly the company is making s
 | 1998 | {"hours":2,"minutes":8,"seconds":7,"milliseconds":956.363}   |
 ```
 
-## Licnse information
+## [Licence](#licence)
 
-Ths projec is crrently unlicensed.
+This project was supervised and is owned by [AiCore](https://www.theaicore.com/), a specialist AI & Data career accelerator whose focus is on building experience through real-world, industry-grade projects and applications.
