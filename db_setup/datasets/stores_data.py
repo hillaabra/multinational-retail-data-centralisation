@@ -94,7 +94,10 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
 
     # method to extract the remaining rows of store data and add them to the created dataframe
-    def _add_remaining_stores_as_rows_to_df(self, df_store_data: pd.DataFrame, num_of_stores: int, header_dict: dict) -> pd.DataFrame:
+    def _add_remaining_stores_as_rows_to_df(self,
+                                            df_store_data: pd.DataFrame,
+                                            num_of_stores: int,
+                                            header_dict: dict) -> pd.DataFrame:
         '''
         Protected; method used internally to finish loading from the API
         the remaining store details to the initialised DataFrame
@@ -173,44 +176,38 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         sd_df = self._extracted_data.copy()
 
-        # index column not correctly handled in download
-        # from API, so dropping redundant column named 'index'
-        # and dropping redundant 'lat' column that has no meaningful data (only  11 non-null values)
+        # index column not correctly handled in download from API
+        # and 'lat' column that has no meaningful data (there is a 'latitude' column instead)
         self._drop_columns(sd_df, ['index', 'lat'])
 
-        # dropping rows where store_data is 'NULL' (as a string), since all other column values also 'NULL' for these rows
+        # these rows have no meaningful data
         sd_df = self._remove_rows_with_specific_value_in_specified_column(sd_df, 'store_code', 'NULL')
 
-        # deleting all rows where the country_code isn't valid, since this correlates
-        # with the rows that have no meaningful values
+        # these rows have no meaningful data
         sd_df = self._remove_rows_where_column_values_not_in_defined_list(sd_df, 'country_code', ['GB', 'DE', 'US'])
 
-        # replacing mistyped continent values
         self._replace_values_with_mapping_dictionary(sd_df, 'continent', {'eeEurope': 'Europe', 'eeAmerica': 'America'})
 
-        # casting address, locality, store_code and (temporarily - for regex purposes) staff-numbers to strings
+        # staff-numbers temporarily cast to strings for regex purposes
         self._cast_columns_to_string(sd_df, ['address', 'locality', 'staff_numbers', 'store_code'])
 
-        # converting longitude, latitude columns to float types
         self._cast_columns_to_float(sd_df, ['longitude', 'latitude'], 'coerce')
 
-        # removing typos (non-numerical) characters from staff_numbers field
+        # removing typos (non-numerical) characters
         sd_df['staff_numbers'] = sd_df.staff_numbers.str.replace(r'\D', '', regex=True)
 
-        # casting staff_numbers to integer type
         self._cast_columns_to_integer(sd_df, ['staff_numbers'], 'raise')
 
-        # changing absent string values in Web Store record to None (values in numeric columns are set to NaN)
+        # 0 is the index of the record for the Web Store
         sd_df.at[0, 'address'] = None
         sd_df.at[0, 'locality'] = None
 
-        # deleting rows where the store_code value is the string 'NULL' since these rows have no meaningful data
+        # these rows have no meaningful data
         sd_df = self._remove_rows_with_specific_value_in_specified_column(sd_df, 'store_code', 'NULL')
 
-        # casting the columns with a small range of concrete values to category types
         self._cast_columns_to_category(sd_df, ['store_type', 'country_code', 'continent'])
 
-        # manually replacing opening_date values that have outlying formats (majority are presented in ISO time)
+        # these are the outlying date values (the rest are presented in ISO time)
         opening_date_mapping_dict = {'October 2012 08': '2012-10-08',
                                      'July 2015 14': '2015-07-14',
                                      '2020 February 01': '2020-02-01',
@@ -224,7 +221,6 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         self._replace_values_with_mapping_dictionary(sd_df, 'opening_date', opening_date_mapping_dict)
 
-        # casting the opening_date column to datetime
         self._cast_columns_to_datetime64(sd_df, ['opening_date'], 'mixed', 'raise')
 
         self._cleaned_data = sd_df
