@@ -26,7 +26,7 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         try:
           DataExtractor.__init__(self)
-          DatabaseTableConnector.__init__(self, target_table_name = 'dim_card_details')
+          DatabaseTableConnector.__init__(self, card_data_config['target_table_name'])
           self._source_data_url = card_data_config['source_data_url']
         except Exception:
             print("Something went wrong trying to initialise the CardData child class")
