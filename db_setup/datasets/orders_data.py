@@ -45,7 +45,7 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
     def clean_extracted_data(self) -> None:
         '''
         Method inherited from abstract base class DataCleaning. Makes a copy of
-        the Pandas dataframe stored at the _extracted_data attribute and assigns, applies
+        the Pandas dataframe stored at the _extracted_data attribute, applies
         cleaning methods to this copy of the dataframe, and assigns the dataframe
         after cleaning to the class's _cleaned_data attribute.
         '''
