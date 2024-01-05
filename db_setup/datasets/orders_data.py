@@ -16,9 +16,12 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
     Attributes:
     ----------
     _target_table_name: str
-        'orders_table'
+        Protected; extracted from orders_data_config import from config module.
+        Signifies how the data should be named in the new local database.
     _source_db_table_name: str
-        'orders_table', the table name as it appears in the AWS RDS database
+        Protected; extracted from orders_data_config import from config module;
+        the table name of the dataset in the AWS RDS database it is being extracted
+        from.
     '''
     def __init__(self) -> None:
         '''

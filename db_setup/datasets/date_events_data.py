@@ -15,9 +15,10 @@ class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     Attributes:
     ----------
     _target_table_name: str
-        'dim_date_times'
+        Protected; extracted from date_events_data_config import from config module.
+        Signifies how the data should be named in the new local database.
     _source_data_url: str
-        Protected; URL to the dataset (publicly accessed)
+        Protected; extracted from date_events_data_config import from config module.
     '''
     def __init__(self):
         '''

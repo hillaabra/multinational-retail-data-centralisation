@@ -16,9 +16,12 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
     Attributes:
     ----------
     _target_table_name: str
-        'dim_users'
+        Protected; extracted from user_data_config import from config module.
+        Signifies how the data should be named in the new local database.
     _source_db_table_name: str
-        'legacy_users', the table name as it appears in the AWS RDS database
+        Protected; extracted from user_data_config import from config module; the
+        table name of the dataset in the AWS RDS database it is being extracted
+        from.
     '''
     def __init__(self):
         '''

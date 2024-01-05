@@ -1,4 +1,3 @@
-# %%
 import re
 
 import pandas as pd
@@ -9,7 +8,7 @@ from ..data_cleaning import DataCleaning
 from ..data_extraction import DataExtractor
 from ..database_utils import DatabaseTableConnector
 
-# %%
+
 class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     '''
     Represents the products data dataset and the methods used to extract,
@@ -19,9 +18,11 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
     Attributes:
     ----------
     _target_table_name: str
-        'dim_products'
+        Protected; extracted from products_data_config import from config module.
+        Signifies how the data should be named in the new local database.
     _source_data_s3_uri: str
-        Protected; AWS S3 URI of csv object (freely accessed with AWS subscription)
+        Protected; extracted from products_data_config import from config module.
+        AWS S3 URI of csv object (freely accessed with AWS subscription).
     '''
     def __init__(self):
         '''
@@ -45,8 +46,6 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         extracted_data_df = self._extract_from_s3(self._source_data_s3_uri)
         self._extracted_data = extracted_data_df
 
-    # method to convert product weights
-    # it should take the products dataframe as an argument and return the products dataframe
     @staticmethod
     def _convert_product_weights_to_kg_float(pd_df: pd.DataFrame) -> pd.DataFrame:
         '''
@@ -91,7 +90,7 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         return pd_df
 
-    # define method from abstrat base class to clean product data
+    # define method from abstract base class to clean product data
     def clean_extracted_data(self) -> None:
         '''
         Method inherited from abstract base class DataCleaning. Makes a copy of
@@ -130,7 +129,6 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         self._cleaned_data = pd_df
         setattr(self, 'dtypes_for_upload', {'date_added': DATE, 'uuid': UUID})
 
-    # method to add weight_class column
     def add_weight_class_column_to_db_table(self) -> None:
         '''
         Method that adds a 'weight_class' column to the dim_products table

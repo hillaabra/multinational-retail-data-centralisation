@@ -18,16 +18,20 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
     Attributes:
     ----------
     _target_table_name: str
-        Protected; 'dim_store_details'
+        Protected; extracted from stores_data_config import from config module.
+        Signifies how the data should be named in the new local database.
     _store_details_endpoint: str
-        Protected; the API endpoint which retrieves the details of every store the business has. The endpoint is missing
-        the '{num}' at the end, where {num} relates to each numbered endpoint.
+        Protected; extracted from stores_data_config import from config module;
+        the API endpoint which retrieves the details of every store the business has.
+        The endpoint is missing the '{num}' at the end, where {num} relates to each
+        numbered endpoint.
     _num_of_stores_endpoint: str
-        Protected; the API endpoint which retrieves the number of stores the business has.
+        Protected; extracted from stores_data_config import from config module;
+        the API endpoint which retrieves the number of stores the business has.
     '''
     def __init__(self):
         '''
-        See help(StoresData) for an accurate signature
+        See help(StoresData) for an accurate signature.
         '''
         try:
           DataExtractor.__init__(self)

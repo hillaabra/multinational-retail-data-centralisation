@@ -16,9 +16,10 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
     Attributes:
     ----------
     _target_table_name: str
-        'dim_card_details'
+        Protected; extracted from card_data_config import from config module.
+        Signifies how the data should be named in the new local database.
     _source_data_url: str
-        Protected; URL to the dataset (publicly accessed)
+        Protected; extracted from card_data_config import from config module.
     '''
     def __init__(self):
         '''
