@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
+from .config import card_data_config
 from ..data_cleaning import DataCleaning
 from ..data_extraction import DataExtractor
 from ..database_utils import DatabaseTableConnector
@@ -24,12 +25,12 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
         See help(CardData) for accurate signature.
         '''
         DataExtractor.__init__(self)
-        DatabaseTableConnector.__init__(self, target_table_name = 'dim_card_details')
-        self._source_data_url = 'https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'
+        DatabaseTableConnector.__init__(self, target_table_name = card_data_config['target_table_name'])
+        self._source_data_url = card_data_config['source_data_url']
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, target_table_name = 'dim_card_details')
-          self._source_data_url = 'https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'
+          self._source_data_url = card_data_config['source_data_url']
         except Exception:
             print("Something went wrong trying to initialise the CardData child class")
 
