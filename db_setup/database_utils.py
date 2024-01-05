@@ -13,7 +13,7 @@ class DatabaseConnector(ABC):
     Parameters:
     ---------
     credentials_yaml: str
-        Relative filepath to YAML file containing the subclass's
+        Filepath to YAML file containing the subclass's
         database credentials.
 
     Attributes:
@@ -88,7 +88,8 @@ class DatabaseConnector(ABC):
 class RDSDatabaseConnector(DatabaseConnector):
     '''
     A child class extending DatabaseConnector, providing connection
-    to the AWS RDS database.
+    to the AWS RDS database specified in the credentials saved at
+    "db_setup/.credentials/remote_db_creds.yaml".
     '''
     # instance of class initialised with the filepath to the credentials YAML
     # supplied for the AWS RDS database
@@ -130,7 +131,8 @@ class RDSDatabaseConnector(DatabaseConnector):
 class LocalDatabaseConnector(DatabaseConnector):
     '''
     A child class extending DatabaseConnector, providing connection
-    to the local postgreSQL database specified in the credentials.
+    to the local postgreSQL database specified in the credentials
+    saved at "db_setup/.credentials/local_db_creds.yaml".
     '''
     # instance of class initialised with the filepath to the credentials
     # for the local postgresql database, saved as a yaml file
