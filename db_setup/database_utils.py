@@ -30,7 +30,7 @@ class DatabaseConnector(ABC):
     # initialise the DatabaseConnector child class with the yaml file containing the database credentials
     def __init__(self, credentials_yaml: str) -> None:
        '''
-       See help(DatabaseConnector) for accurate signature
+       See help(DatabaseConnector) for accurate signature.
        '''
        self.__credentials_yaml = credentials_yaml
        self.engine = self._init_db_engine()
@@ -398,4 +398,3 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         '''
         query = f'ALTER TABLE {self.target_table_name} RENAME "{original_column_name}" TO "{target_column_name}";'
         self.update_db(query)
-
