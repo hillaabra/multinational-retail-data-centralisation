@@ -1,5 +1,4 @@
 import pandas as pd
-# from pandas.tseries.offsets import MonthEnd  <-- expiry date wanted imported as varchar
 from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
 from ..data_cleaning import DataCleaning
@@ -78,15 +77,6 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         return cd_df
 
-    # @staticmethod
-    # def _convert_expiry_date_to_datetime(cd_df: pd.DataFrame) -> pd.DataFrame:
-
-    #     cd_df['expiry_date'] = pd.to_datetime(cd_df['expiry_date'], format='%m/%y', errors='raise')
-
-    #     cd_df['expiry_date'] = cd_df['expiry_date'] + MonthEnd(0)
-
-    #     return cd_df
-
     # redefining the abstract method
     def clean_extracted_data(self) -> None:
         '''
@@ -100,9 +90,6 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
 
         # clean up card_number column, and remove NaN values
         card_data_df = self._clean_card_number_data(card_data_df)
-
-        # apparently this step wasn't wanted - data requested to be cast as varchar
-        # card_data_df = self._convert_expiry_date_to_datetime(card_data_df)
 
         self._cast_columns_to_datetime64(card_data_df, ['date_payment_confirmed'], 'mixed', 'coerce', parse_first=True)
 
