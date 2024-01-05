@@ -268,8 +268,6 @@ class DatabaseTableConnector(LocalDatabaseConnector):
               except Exception:
                 print("User input Y and _cleaned_data property is not None, table by this name already exists in db, \
                       but an error occurred in uploading to the db and replacing the table.")
-                print("User input Y and _cleaned_data property is not None, table by this name already exists in db, \
-                      but an error occurred in uploading to the db and replacing the table.")
             # if the user wanted to override the existing table with that name in the database,
             # but there is not cleaned data stored on the class instance
             elif input == 'Y':
