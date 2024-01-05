@@ -96,7 +96,7 @@ class RDSDatabaseConnector(DatabaseConnector):
        '''
        See help(RDSDatabaseConnector) for accurate signature.
        '''
-       super().__init__('.credentials/remote_db_creds.yaml')
+       super().__init__('db_setup/.credentials/remote_db_creds.yaml')
 
     # Method that reads the credentials from the return of _read_db_creds,
     # initialises and returns a sqlalchemy database engine
@@ -138,7 +138,7 @@ class LocalDatabaseConnector(DatabaseConnector):
        '''
        See help(LocalDatabaseConnector) for accurate signature.
        '''
-       super().__init__('.credentials/local_db_creds.yaml')
+       super().__init__('db_setup/.credentials/local_db_creds.yaml')
 
     # method to connect to local pgadmin database
     def _init_db_engine(self):
