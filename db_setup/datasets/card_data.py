@@ -24,9 +24,6 @@ class CardData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         See help(CardData) for accurate signature.
         '''
-        DataExtractor.__init__(self)
-        DatabaseTableConnector.__init__(self, target_table_name = card_data_config['target_table_name'])
-        self._source_data_url = card_data_config['source_data_url']
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, target_table_name = 'dim_card_details')
