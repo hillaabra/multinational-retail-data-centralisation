@@ -130,7 +130,7 @@ class RDSDatabaseConnector(DatabaseConnector):
 class LocalDatabaseConnector(DatabaseConnector):
     '''
     A child class extending DatabaseConnector, providing connection
-    to the postgreSQL database on the local server.
+    to the local postgreSQL database specified in the credentials.
     '''
     # instance of class initialised with the filepath to the credentials
     # for the local postgresql database, saved as a yaml file
