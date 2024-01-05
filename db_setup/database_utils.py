@@ -250,7 +250,8 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         print(f"Starting upload of {self.target_table_name} to local sales_data database.")
         # if table name assigned to this dataset already in the database on initialisation
         if self.table_in_db_at_init:
-            user_input = input("This table already exists. Enter Y if you wish to continue. This will override the existing table.")
+            user_input = input("This table already exists. Enter Y if you wish to continue. \
+                               This will override the existing table.")
             # if the user wants to override the existing table with that name in the database,
             # and the current instance of the class has stored a cleaned dataset in its property _cleaned_data,
             # un upload is attempted to replace the existing dataframe
@@ -258,16 +259,19 @@ class DatabaseTableConnector(LocalDatabaseConnector):
               try:
                 self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
                 #
-                # TO DO: ADD CODE HERE TO DROP/CHECK FOR RELEVANT PRIMARY AND FOREIGN KEYS IN EXISTING TABLES BEFORE UPLOAD
-                # USE: self.return_column_in_common_with_orders_table() to get name of primary key column
-                # FYI DROP CONSTRAINT currently unsupported for PRIMARY and FOREIGN KEYS in postgresql
+                # TODO: when DROP CONSTRAINT becomes supported for PRIMARY and FOREIGN KEYS in potgresql,
+                # DROP/CHECK FOR RELEVANT PRIMARY AND FOREIGN KEYS IN EXISTING TABLES BEFORE UPLOAD
+                # (using self.return_column_in_common_with_orders_table() to get name of primary key column)
                 #
                 self._cleaned_data.to_sql(self.target_table_name, self.engine, if_exists='replace', dtype=self.dtypes_for_upload)
                 self.engine.dispose()
               except Exception:
-                print("User input Y and _cleaned_data property is not None, table by this name already exists in db, but an error occurred in uploading to the db and replacing the table.")
-                print("User input Y and _cleaned_data property is not None, table by this name already exists in db, but an error occurred in uploading to the db and replacing the table.")
-            # if the user wanted to override the existing table with that name in the database, but there is not cleaned data stored on the class instance
+                print("User input Y and _cleaned_data property is not None, table by this name already exists in db, \
+                      but an error occurred in uploading to the db and replacing the table.")
+                print("User input Y and _cleaned_data property is not None, table by this name already exists in db, \
+                      but an error occurred in uploading to the db and replacing the table.")
+            # if the user wanted to override the existing table with that name in the database,
+            # but there is not cleaned data stored on the class instance
             elif input == 'Y':
               print("The _cleaned_data property on this instance is empty. There is no dataframe to upload.")
             # if the user inputs anything else other than Y
@@ -330,7 +334,8 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         '''
         if self._check_if_table_in_db():
             query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix,\
-                    datetime_precision, udt_name, is_nullable FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{self.target_table_name}';"
+                        datetime_precision, udt_name, is_nullable FROM INFORMATION_SCHEMA.COLUMNS \
+                        WHERE TABLE_NAME = '{self.target_table_name}';"
             with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
                 result = conn.execute(text(query))
                 print(result.keys())
