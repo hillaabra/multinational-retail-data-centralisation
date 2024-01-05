@@ -32,9 +32,9 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         try:
           DataExtractor.__init__(self)
           DatabaseTableConnector.__init__(self, stores_data_config['target_table_name'])
-          self._store_details_endpoint: stores_data_config['store_details_endpoint']
-          self._num_of_stores_endpoint: stores_data_config['num_of_stores_endpoint']
-          self.__api_credentials_filepath: stores_data_config['api_credentials_filepath']
+          self._store_details_endpoint = stores_data_config['store_details_endpoint']
+          self._num_of_stores_endpoint = stores_data_config['num_of_stores_endpoint']
+          self.__api_credentials_filepath = stores_data_config['api_credentials_filepath']
         except Exception:
           print("Something went wrong initialising the StoresData child class")
 
@@ -144,17 +144,18 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         pd.DataFrame: Pandas DataFrame of the extracted stores data
         '''
         header_dict = self._retrieve_api_authorisation(self.__api_credentials_filepath)
+        return header_dict # test line
 
-        df_store_data = self._initialise_stores_df_loading(header_dict)
+        # df_store_data = self._initialise_stores_df_loading(header_dict)
 
-        num_of_stores = self._get_number_of_stores(header_dict)
+        # num_of_stores = self._get_number_of_stores(header_dict)
 
-        if num_of_stores is not None:
-            df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, header_dict)
+        # if num_of_stores is not None:
+        #     df_store_data = self._add_remaining_stores_as_rows_to_df(df_store_data, num_of_stores, header_dict)
 
-            return df_store_data
-        else:
-           print("Error: Could not retrieve num_of_stores from API.")
+        #     return df_store_data
+        # else:
+        #    print("Error: Could not retrieve num_of_stores from API.")
 
     # defining abstract method from DataExtractor base class
     # this method assigns the dataframe of extracted data to the extracted_data attribute
@@ -165,7 +166,7 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
       class's _extracted_data attribute.
       '''
       extracted_data_df = self._retrieve_stores_data()
-      self._extracted_data = extracted_data_df
+      # self._extracted_data = extracted_data_df
 
     # defining abstract method from DataCleaning abstract base class
     def clean_extracted_data(self) -> None:
