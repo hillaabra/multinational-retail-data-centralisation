@@ -3,6 +3,7 @@ import pandas as pd
 
 from sqlalchemy.dialects.postgresql import DATE, VARCHAR
 
+from .config import stores_data_config
 from ..data_extraction import DataExtractor
 from ..data_cleaning import DataCleaning
 from ..database_utils import DatabaseTableConnector
@@ -30,10 +31,10 @@ class StoresData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         try:
           DataExtractor.__init__(self)
-          DatabaseTableConnector.__init__(self, target_table_name='dim_store_details')
-          self._store_details_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/'
-          self._num_of_stores_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
-          self.__api_credentials_filepath = '.credentials/api_config.json'
+          DatabaseTableConnector.__init__(self, stores_data_config['target_table_name'])
+          self._store_details_endpoint: stores_data_config['store_details_endpoint']
+          self._num_of_stores_endpoint: stores_data_config['num_of_stores_endpoint']
+          self.__api_credentials_filepath: stores_data_config['api_credentials_filepath']
         except Exception:
           print("Something went wrong initialising the StoresData child class")
 

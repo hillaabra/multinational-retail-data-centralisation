@@ -1,5 +1,6 @@
 from sqlalchemy.dialects.postgresql import SMALLINT, UUID, VARCHAR
 
+from .config import orders_data_config
 from ..data_extraction import DataExtractor
 from ..data_cleaning import DataCleaning
 from ..database_utils import DatabaseTableConnector, RDSDatabaseConnector
@@ -25,8 +26,8 @@ class OrdersData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         try:
             DataExtractor.__init__(self)
-            DatabaseTableConnector.__init__(self, target_table_name='orders_table')
-            self._source_db_table_name='orders_table'
+            DatabaseTableConnector.__init__(self, orders_data_config['target_table_name'])
+            self._source_db_table_name = orders_data_config['source_db_table_name']
         except Exception:
            print("Something went wrong initialising the OrdersData child class.")
 

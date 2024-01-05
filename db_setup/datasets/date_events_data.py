@@ -1,5 +1,6 @@
 from sqlalchemy.dialects.postgresql import UUID, VARCHAR
 
+from .config import date_events_data_config
 from ..data_cleaning import DataCleaning
 from ..data_extraction import DataExtractor
 from ..database_utils import DatabaseTableConnector
@@ -24,8 +25,8 @@ class DateEventsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         try:
             DataExtractor.__init__(self)
-            DatabaseTableConnector.__init__(self, target_table_name='dim_date_times')
-            self._source_data_url = 'https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json'
+            DatabaseTableConnector.__init__(self, date_events_data_config['target_table_name'])
+            self._source_data_url = date_events_data_config['source_data_url']
         except Exception:
             print("Something went wrong initialising the DateEventsData child class.")
 

@@ -1,6 +1,7 @@
 import numpy as np
 from sqlalchemy.dialects.postgresql import DATE, UUID, VARCHAR
 
+from .config import user_data_config
 from ..data_cleaning import DataCleaning
 from ..data_extraction import DataExtractor
 from ..database_utils import DatabaseTableConnector, RDSDatabaseConnector
@@ -25,8 +26,8 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         try:
           DataExtractor.__init__(self)
-          DatabaseTableConnector.__init__(self, target_table_name='dim_users')
-          self._source_db_table_name = 'legacy_users'
+          DatabaseTableConnector.__init__(self, user_data_config['target_table_name'])
+          self._source_db_table_name = user_data_config['source_db_table_name']
         except Exception:
           print("Something went wrong when initialising UserData child class")
 

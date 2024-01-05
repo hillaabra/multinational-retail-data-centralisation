@@ -4,6 +4,7 @@ import re
 import pandas as pd
 from sqlalchemy.dialects.postgresql import DATE, UUID
 
+from .config import products_data_config
 from ..data_cleaning import DataCleaning
 from ..data_extraction import DataExtractor
 from ..database_utils import DatabaseTableConnector
@@ -28,8 +29,8 @@ class ProductsData(DataExtractor, DataCleaning, DatabaseTableConnector):
         '''
         try:
           DataExtractor.__init__(self)
-          DatabaseTableConnector.__init__(self, target_table_name='dim_products')
-          self._source_data_s3_uri = 's3://data-handling-public/products.csv'
+          DatabaseTableConnector.__init__(self, products_data_config['target_table_name'])
+          self._source_data_s3_uri = products_data_config['source_data_s3_uri']
         except Exception:
             print("Something went wrong initialising the ProductsData child class")
 
