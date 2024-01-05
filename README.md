@@ -43,15 +43,16 @@ In the inner project directory, `multinational-retail-data-centralisation`, ther
         - `database_utils.py`
         - `data_extraction.py`
         - `data_cleaning.py`
-    - The following scripts contain the child classes defined for each of the datasets:
+    - `__main__.py` executes the extraction, cleaning and uploading of all the datasets, and the finalising of the local database schema
+    - `env.yaml` has the conda environment details required for the program
+    - The `datasets` child directory holds the scripts containing the child classes defined for each of the datasets and a `config.py` file:
+        - `config.py` *(contains a dictionary with the details required for each individual dataset's class constructor method)*
         - `card_data.py`
         - `date_events_data.py`
         - `orders_data.py` *(which is the dataset populating the single-source-of-truth table sitting at the centre of the star-schema database)*
         - `products_data.py`
         - `stores_data.py`
         - `user_data.py`
-    - `__main__.py` executes the extraction, cleaning and uploading of all the datasets, and the finalising of the local database schema
-    - `env.yaml` has the conda environment details required for the program
 - `querying-the-data` contains a `.sql` script with all the queries executed on the newly created database and a `.csv` file storing the results for each of those queries.
 
 Missing from the repo, but required for the successful execution of the `db_setup` package, are:
@@ -102,13 +103,9 @@ PORT: 5432
 ```
 $ conda activate multinational-retail-data-centralisation
 ```
-7. You are now ready to install the database on your local postgres server. This can be done from inside the `db_setup` directory by running:
+7. You are now ready to install the database on your local postgres server. This can be done from the parent directory by running:
 ```
-$ python __main__.py
-```
- - Or, from its parent directory the next level up, `multinational-retail-data-centralisation`:
-```
-$ python db_setup
+$ python -m db_setup
 ```
 ## [Usage](#usage)
 The completed database is composed of 5 dimension tables that relate to a single-source-of-truth table at its centre, which contains the definitive reference data for the organisation's retail orders.
