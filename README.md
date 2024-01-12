@@ -112,18 +112,18 @@ See the [key findings](#findings-of-data-analysis) below for examples of the dat
 
 ### 1. How many stores does the business have and in which country?
 The operations team wanted to know which countries they currently operate in and which country now has the most stores. The results showed their brick-and-mortar stores are located across the UK, Germany and the US, with most of their stores based in the UK.
-```
+
 | country | total_no_stores |
-| ------- | --------------- |
+| --------- | -------------
 | GB      |             266 |
 | DE      |             141 |
 | US      |              34 |
-```
+
 ### 2. Which locations currently have the most stores?
 The business stakeholders were looking to close some stores before opening more in other locations. To help in their decision of where to close stores, they wanted to know which locations had the most stores at present.
 
 The query produced the following locations as having the most stores:
-```
+
 | locality     | total_no_stores |
 | ------------ | --------------- |
 | Chapletown   |              14 |
@@ -133,12 +133,12 @@ The query produced the following locations as having the most stores:
 | Arbroath     |              10 |
 | High Wycombe |              10 |
 | Rutherglen   |              10 |
-```
+
 ### 3. Which months of the year produce the largest amounts of sales?
 To find out which months of the year have historically produced the most sales, I joined the products and date times dimensions tables onto the orders table and calculated the overal total revenues grouped by month.
 
 The results showed that the month which had historically produced the most sales revenue was August, followed by January, then October.
-```
+
 | total_sales | month |
 | ----------- | ----- |
 |  673,295.68 |     8 |
@@ -147,24 +147,22 @@ The results showed that the month which had historically produced the most sales
 |  650,321.43 |     5 |
 |  645,741.70 |     7 |
 |  645,463.00 |     3 |
-```
+
 ### 4. How many sales are happening online vs offline?
 
 The company is looking to increase its online sales. They wanted to know how many sales were happening online compared to offline. I calculated how many products have been sold and the amount of sales made (in GBP) for online and offline purchases across the company's sales data history.
 
 The results showed that their offline sales have produced over three times the number and total revenue of sales than their web store.
 
-```
 | numbers_of_sales | product_quantity_count | location |
 | ---------------- | ---------------------- | -------- |
 |           26,957 |                107,739 | Web      |
 |           93,166 |                374,047 | Offline  |
-```
+
 ### 5. What percentage of sales come through each type of store?
 The sales team wanted to know which of the different store types generated the most revenue so that they could decide where to focus their efforts.
 I calculated the total sales revenue (in GBP) and the percentage of sales coming from each of the different store types.
 
-```
 | store_type  |  total_sales | percentage_total(%) |
 | ----------- | ------------ | ------------------- |
 | Local       | 3,440,896.52 |               44.56 |
@@ -172,11 +170,11 @@ I calculated the total sales revenue (in GBP) and the percentage of sales coming
 | Super Store | 1,224,293.65 |               15.85 |
 | Mall Kiosk  |   698,791.61 |                9.05 |
 | Outlet      |   631,804.81 |                8.18 |
-```
+
 ### 6. Which month in which year produced the highest cost of sales?
 The company stakeholders wanted assurances that the company has been doing well recently.
 I ran a query to find out which months in which years have had the most sales historically. (The latest sales data is from 2022.) The results show that none of the last three years feature in the company's most profitable months.
-```
+
 | total_sales |  year | month |
 | ----------- | ----- | ----- |
 |   27,936.77 | 1,994 |     3 |
@@ -189,32 +187,31 @@ I ran a query to find out which months in which years have had the most sales hi
 |   25,798.12 | 2,010 |     5 |
 |   25,648.29 | 1,996 |     8 |
 |   25,614.54 | 2,000 |     1 |
-```
+
 ### 7. What is the staff headcount?
 The operations team wanted to know the overall staff numbers in each location around the world. I performed a query to determine the staff numbers in each of the countries the company sells in.
 
-```
 | total_staff_numbers | country_code |
 | ------------------- | ------------ |
 |              13,307 | GB           |
 |               6,123 | DE           |
 |               1,384 | US           |
-```
+
 ### 8. Which German store is selling the most?
 The sales team was looking to expand their territory in Germany. I ran a query to determine which type of store had generated the most sales in Germany across the company's sales history.
-```
+
 |  total_sales | store_type  | country_code |
 | ------------ | ----------- | ------------ |
 |   198,373.57 | Outlet      | DE           |
 |   247,634.20 | Mall Kiosk  | DE           |
 |   384,625.03 | Super Store | DE           |
 | 1,109,909.59 | Local       | DE           |
-```
+
 *(For most of the results above, a query focussing on a window of more recent sales is likely to provide more actionable information, since these queries have been run on sales data spanning three decades.)*
 
 ### 9. How quickly is the company making sales?
 The sales team wanted an accurate metric for how quickly the company is making sales. I determined the average time taken between each sale, grouped by year.
-```
+
 | year | actual_time_taken                                            |
 | ---- | ------------------------------------------------------------ |
 | 2013 | {"hours":2,"minutes":17,"seconds":12,"milliseconds":300.182} |
@@ -249,7 +246,6 @@ The sales team wanted an accurate metric for how quickly the company is making s
 | 2017 | {"hours":2,"minutes":8,"seconds":46,"milliseconds":828.025}  |
 | 2003 | {"hours":2,"minutes":8,"seconds":45,"milliseconds":491.916}  |
 | 1998 | {"hours":2,"minutes":8,"seconds":7,"milliseconds":956.363}   |
-```
 
 ## [Licence](#licence)
 
