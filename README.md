@@ -14,6 +14,9 @@
 ## Table of Contents
 * [Project Overview](#project-overview)
 * [File Structure](#file-structure)
+    * [Top-level Repository File Structure](#top-level-repo-file-structure)
+    * [Database Setup Package File Structure](#db-setup-file-structure)
+    * [Data Queries Directory File Structure](#data-queries-file-structure)
 * [Installation](#installation)
 * [Usage](#usage)
 * [Findings of Data Analysis](#findings-of-data-analysis)
@@ -37,30 +40,20 @@ The final phase of the project leverages the centralised data to extract valuabl
 
 ## [File Structure](#file-structure)
 
-In the inner project directory, `multinational-retail-data-centralisation`, there are two sub-directories:
-- `db_setup` contains the scripts that implement the data solution:
-    - The top-level utility classes are contained in the scripts:
-        - `database_utils.py`
-        - `data_extraction.py`
-        - `data_cleaning.py`
-    - `__main__.py` executes the extraction, cleaning and uploading of all the datasets, and the finalising of the local database schema
-    - `env.yaml` has the conda environment details required for the program
-    - The `datasets` child directory holds the scripts containing the child classes defined for each of the datasets and a `config.py` file:
-        - `config.py` *(contains a dictionary with the details required for each individual dataset's class constructor method)*
-        - `card_data.py`
-        - `date_events_data.py`
-        - `orders_data.py` *(which is the dataset populating the single-source-of-truth table sitting at the centre of the star-schema database)*
-        - `products_data.py`
-        - `stores_data.py`
-        - `user_data.py`
-- `querying-the-data` contains a `.sql` script with all the queries executed on the newly created database and a `.csv` file storing the results for each of those queries.
+### [Top-level Repository File Structure](#top-level-repo-file-structure)
 
-Missing from the repo, but required for the successful execution of the `db_setup` package, are:
-- a YAML file containing the credentials for the local database to be loaded into
-- a YAML file containing the credentials for the AWS RDS database from which two of the datasets are extracted
-- a JSON file containing the authentication credentials for the API from which one of the datasets is extracted
+![top level GitHub repo file structure](readme-images/carbon-top-level-repo-file-structure.png)
+
+### [Database Setup Package File Structure](#db-setup-file-structure)
+
+![db_setup directory file structure](readme-images/carbon-db-setup-file-structure.png)
 
 For more details on running the database setup on your local machine, see [Installation](#installation) below.
+
+### [Data Queries Directory File Structure](#data-queries-file-structure)
+
+![querying-the-data directory file structure](readme-images/carbon-querying-the-data-file-structure.png)
+
 
 ## [Installation](#installation)
 Please note you will not be able to set up this database if you are not a member of AiCore, since three of the datasets are private resources and require access to private authentication credentials.
