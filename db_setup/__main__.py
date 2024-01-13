@@ -53,11 +53,11 @@ if __name__ == "__main__":
     # make that column a primary key in the dim table,
     # and make the matching column in the orders_table its foreign key
 for dataset_instance in dataset_instances:
-    if re.match(r'^dim', dataset_instance.target_table_name):
+    if re.match(r'^dim', dataset_instance._target_table_name):
       dataset_instance.set_primary_key_column()
       primary_key_column = dataset_instance.return_column_in_common_with_orders_table()
       orders_table_query1 = f'ALTER TABLE orders_table ALTER COLUMN "{primary_key_column}" SET NOT NULL'
       dataset_instance.update_db(orders_table_query1)
       orders_table_query2 = f'ALTER TABLE orders_table ADD CONSTRAINT fk_{primary_key_column} FOREIGN KEY ("{primary_key_column}")\
-                              REFERENCES {dataset_instance.target_table_name} ("{primary_key_column}");'
+                              REFERENCES {dataset_instance._target_table_name} ("{primary_key_column}");'
       dataset_instance.update_db(orders_table_query2)

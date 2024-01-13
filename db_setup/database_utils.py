@@ -200,7 +200,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
 
     Attributes:
     ----------
-    target_table_name: str
+    _target_table_name: str
         The name of the table as it should be, or is, saved in the local database.
 
     _cleaned_data: None
@@ -208,7 +208,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
 
     table_in_db_at_init: bool
         Boolean value set by _check_if_table_in_db() method. True if a table
-        by the name value of target_table_name is already in the database. False
+        by the name value of _target_table_name is already in the database. False
         if not.
     '''
 
@@ -217,27 +217,27 @@ class DatabaseTableConnector(LocalDatabaseConnector):
        See help(DatabaseTableConnector) for accurate signature.
        '''
        super().__init__()
-       self.target_table_name = target_table_name
+       self._target_table_name = target_table_name
        self._cleaned_data = None
        self.table_in_db_at_init = self._check_if_table_in_db()
 
     #method that checks if the table is in the db
     def _check_if_table_in_db(self) -> bool:
         '''
-        Protected; method that checks if the value of the class attribute target_table_name
+        Protected; method that checks if the value of the class attribute _target_table_name
         matches the name of a table that already exists in the database.
         Used to set the table_in_db_at_init attribute of the class.
         Prints warning method to console if it returns true.
 
         Returns:
         -------
-        bool: True if a table matching the value of the attribute target_table_name
+        bool: True if a table matching the value of the attribute _target_table_name
         is already in the local database. False if a table by that name does not already
         exist there.
         '''
-        is_in_db = self.target_table_name in self.table_names_in_db
+        is_in_db = self._target_table_name in self.table_names_in_db
         if is_in_db:
-          print(f"A table of the name {self.target_table_name} has already been uploaded to your local postgres sales_data database.")
+          print(f"A table of the name {self._target_table_name} has already been uploaded to your local postgres sales_data database.")
         return is_in_db
 
     # method that uploads the _cleaned_data dataframe to the database
@@ -249,7 +249,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         initialised and asks for user input if a table by the same name already exists so that the user
         can choose whether to override the existing table.
         '''
-        print(f"Starting upload of {self.target_table_name} to local sales_data database.")
+        print(f"Starting upload of {self._target_table_name} to local sales_data database.")
         # if table name assigned to this dataset already in the database on initialisation
         if self.table_in_db_at_init:
             user_input = input("This table already exists. Enter Y if you wish to continue. \
@@ -265,7 +265,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
                 # DROP/CHECK FOR RELEVANT PRIMARY AND FOREIGN KEYS IN EXISTING TABLES BEFORE UPLOAD
                 # (using self.return_column_in_common_with_orders_table() to get name of primary key column)
                 #
-                self._cleaned_data.to_sql(self.target_table_name, self.engine, if_exists='replace', dtype=self.dtypes_for_upload)
+                self._cleaned_data.to_sql(self._target_table_name, self.engine, if_exists='replace', dtype=self.dtypes_for_upload)
                 self.engine.dispose()
               except Exception:
                 print("User input Y and _cleaned_data property is not None, table by this name already exists in db, \
@@ -276,11 +276,11 @@ class DatabaseTableConnector(LocalDatabaseConnector):
               print("The _cleaned_data property on this instance is empty. There is no dataframe to upload.")
             # if the user inputs anything else other than Y
             else:
-              print(f"Upload to db of {self.target_table_name} cancelled.")
-        else: # if target_table_name not already in db at initialisation
+              print(f"Upload to db of {self._target_table_name} cancelled.")
+        else: # if _target_table_name not already in db at initialisation
             try:
                 self.engine.execution_options(isolation_level='AUTOCOMMIT').connect()
-                self._cleaned_data.to_sql(self.target_table_name, self.engine, dtype=self.dtypes_for_upload)
+                self._cleaned_data.to_sql(self._target_table_name, self.engine, dtype=self.dtypes_for_upload)
                 self.engine.dispose()
                 # update table_names_in_db_property after upload
                 self._set_db_table_names()
@@ -303,7 +303,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         int: The integer number representing the character length of the longest string in the column.
         '''
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            query = f'SELECT MAX(LENGTH("{column_name}")) FROM "{self.target_table_name}";'
+            query = f'SELECT MAX(LENGTH("{column_name}")) FROM "{self._target_table_name}";'
             result = conn.execute(text(query)).fetchone() # this is returned as a tuple (e.g. (12, 0))
         return result[0] # index to get just the numeric value
 
@@ -321,7 +321,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         '''
         for column_name in column_names:
             max_length = self._get_max_char_length_in_column(column_name)
-            query = f'ALTER TABLE "{self.target_table_name}" ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
+            query = f'ALTER TABLE "{self._target_table_name}" ALTER COLUMN "{column_name}" TYPE VARCHAR({max_length});'
             with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
                 conn.execute(text(query))
 
@@ -330,12 +330,12 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         '''
         Method that prints to the console the data types of the columns
         of the table in the local database matching the value of the class attribute
-        target_table_name.
+        _target_table_name.
         '''
         if self._check_if_table_in_db():
             query = f"SELECT column_name, data_type, character_maximum_length, numeric_precision, numeric_precision_radix,\
                         datetime_precision, udt_name, is_nullable FROM INFORMATION_SCHEMA.COLUMNS \
-                        WHERE TABLE_NAME = '{self.target_table_name}';"
+                        WHERE TABLE_NAME = '{self._target_table_name}';"
             with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
                 result = conn.execute(text(query))
                 print(result.keys())
@@ -359,7 +359,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         '''
         if self._check_if_table_in_db():
             query = f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS \
-                        WHERE TABLE_NAME = '{self.target_table_name}' \
+                        WHERE TABLE_NAME = '{self._target_table_name}' \
                         AND COLUMN_NAME != 'index' \
                     INTERSECT \
                       SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS \
@@ -369,7 +369,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
             column_name = result[0] # index to just get the column value
             return column_name
         else:
-           print(f"Error: There is no table with the name '{self.target_table_name}' in the database.")
+           print(f"Error: There is no table with the name '{self._target_table_name}' in the database.")
 
     # method to set the primary key column of the table
     def set_primary_key_column(self) -> None:
@@ -378,8 +378,8 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         '''
         column_name = self.return_column_in_common_with_orders_table()
         if column_name is not None:
-            query1 = f'ALTER TABLE "{self.target_table_name}" ALTER COLUMN "{column_name}" SET NOT NULL;'
-            query2 = f'ALTER TABLE "{self.target_table_name}" ADD PRIMARY KEY ("{column_name}");'
+            query1 = f'ALTER TABLE "{self._target_table_name}" ALTER COLUMN "{column_name}" SET NOT NULL;'
+            query2 = f'ALTER TABLE "{self._target_table_name}" ADD PRIMARY KEY ("{column_name}");'
             with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
                 conn.execute(text(query1))
                 conn.execute(text(query2))
@@ -396,5 +396,5 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         target_column_name: str
             The name the column should be changed to.
         '''
-        query = f'ALTER TABLE {self.target_table_name} RENAME "{original_column_name}" TO "{target_column_name}";'
+        query = f'ALTER TABLE {self._target_table_name} RENAME "{original_column_name}" TO "{target_column_name}";'
         self.update_db(query)
