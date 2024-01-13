@@ -201,13 +201,13 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     Attributes:
     ----------
     _target_table_name: str
-        The name of the table as it should be, or is, saved in the local database.
+        Protected; the name of the table as it should be, or is, saved in the local database.
 
     _cleaned_data: None
-        Protected. Will be replaced with a pd.DataFrame after data cleaning.
+        Protected; will be replaced with a pd.DataFrame after data cleaning.
 
     _table_in_db_at_init: bool
-        Boolean value set by _check_if_table_in_db() method. True if a table
+        Protected; Boolean value set by _check_if_table_in_db() method. True if a table
         by the name value of _target_table_name is already in the database. False
         if not.
     '''
