@@ -206,7 +206,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
     _cleaned_data: None
         Protected. Will be replaced with a pd.DataFrame after data cleaning.
 
-    table_in_db_at_init: bool
+    _table_in_db_at_init: bool
         Boolean value set by _check_if_table_in_db() method. True if a table
         by the name value of _target_table_name is already in the database. False
         if not.
@@ -219,14 +219,14 @@ class DatabaseTableConnector(LocalDatabaseConnector):
        super().__init__()
        self._target_table_name = target_table_name
        self._cleaned_data = None
-       self.table_in_db_at_init = self._check_if_table_in_db()
+       self._table_in_db_at_init = self._check_if_table_in_db()
 
     #method that checks if the table is in the db
     def _check_if_table_in_db(self) -> bool:
         '''
         Protected; method that checks if the value of the class attribute _target_table_name
         matches the name of a table that already exists in the database.
-        Used to set the table_in_db_at_init attribute of the class.
+        Used to set the _table_in_db_at_init attribute of the class.
         Prints warning method to console if it returns true.
 
         Returns:
@@ -251,7 +251,7 @@ class DatabaseTableConnector(LocalDatabaseConnector):
         '''
         print(f"Starting upload of {self._target_table_name} to local sales_data database.")
         # if table name assigned to this dataset already in the database on initialisation
-        if self.table_in_db_at_init:
+        if self._table_in_db_at_init:
             user_input = input("This table already exists. Enter Y if you wish to continue. \
                                This will override the existing table.")
             # if the user wants to override the existing table with that name in the database,
