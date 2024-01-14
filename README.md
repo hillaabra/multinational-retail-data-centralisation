@@ -52,6 +52,7 @@ In the diagram below, for ease of comprehension, the proto-class DATASET is used
 
 ![UML Class diagram](readme-images/mermaid-class-diagram.png)
 
+![UML Class diagram larger](readme-images/mermaid-class-diagram-2500-width.png)
 
 ## [File Structure](#file-structure)
 
