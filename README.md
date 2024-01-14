@@ -13,7 +13,7 @@
 
 ## Table of Contents
 * [Project Overview](#project-overview)
-    * [Database Setup](#db-setup)
+    * [Database Setup Package](#db-setup)
 * [File Structure](#file-structure)
     * [Top-level Repository File Structure](#top-level-repo-file-structure)
     * [Database Setup Package File Structure](#db-setup-file-structure)
@@ -29,7 +29,7 @@ The main implementation of the project is a Python program that extracts, cleans
 
 The database is produced in three phases:
 
-1.  Extracting the large datasets from multiple and varied data sources, including AWS RDS databases, AWS S3 buckets and API endpoints, and of filetypes and datatypes including PDF, CSV, JSON and postgreSQL database tables.
+1.  Extracting the large datasets from multiple and varied data sources, including AWS RDS databases, AWS S3 buckets and API endpoints, and of filetypes and datatypes including PDF, CSV, JSON and PostgreSQL database tables.
 
 2. Cleaning the extracted data in Pandas: removing rows with entirely null or erroneous values, addressing typos in string values, such as non-numeric characters in alphanumeric fields, replacing isolated invalid values with NaN or Null, type- and downcasting columns. This was to ensure consistency in the data uploaded to the local server.
 
@@ -39,18 +39,100 @@ The final phase of the project leverages the centralised data to extract valuabl
 
 4.  I answered a series of questions about the company's sales data using SQL. The results of these queries, which can be seen [below](#findings-of-data-analysis), provide some concrete examples of the kind of complex data analytics this new database schema makes possible.
 
-### [Database Setup](#db-setup)
+### [Database Setup Package](#db-setup)
 
-The program that sets up the database performs ETL (Extract, Transform, Load) methods on 6 datasets, with an additional Transform stage after loading within the PostgreSQL database to finalise the schema. This pipeline is executed by running the `db_setup` package.
+The program that sets up the database performs ETL **(Extract, Transform, Load)** methods on six datasets, with an additional Transform stage after loading within the PostgreSQL database to finalise the schema. This pipeline is executed by running the `db_setup` package.
 
-I followed OOP principles of abstraction and encapsulation to maximise code reusability and readability, and for ease of scalability:
-- A class is defined for each of the datasets, which inherits methods from three utility classes: `DataExtractor`, `DataCleaning`, `DatabaseTableConnector` (a grandchild of `DatabaseConnector`).
-- Since two of the datasets were sourced from an RDS database, and querying and extracting from the RDS database relied on methods overlapping with those required for loading data into the new PostgreSQL database *(e.g. creating a SQLAlchemy engine, getting existing table names and other internal program and developer functionality)*, it made sense to define an Abstract Base Class - `DatabaseConnector` - from which `LocalDatabaseConnector` and `RDSDatabaseConnector` child classes could inherit functionality.
-- `LocalDatabaseConnector` and its child class `DatabaseTableConnector` have developer-targetted functionality and can be used to interact with the local database e.g. during testing or after setup.
+I followed **OOP principles of abstraction and encapsulation** to maximise code reusability and readability, and for ease of scalablity. A dataset-specific class is defined for each of the datasets to be extracted, transformed and loaded. Each dataset-specific class inherits and implements ETL methods defined in the parent utility classes.
 
-In the diagram below, for ease of comprehension, the proto-class DATASET is used as a stand-in to demonstrate the chain of inheritance from the utility classes to each of the six dataset-specific classes:
+**In the simplified UML diagram below, DATASET is used as a stand-in to represent all the dataset-specific classes, which follow identical rules of inheritance:**
 
-![UML Class diagram larger](readme-images/mermaid-class-diagram-2500-width.png)
+![UML Class diagram larger](readme-images/mermaid-class-diagram-pako.png)
+
+Each of these dataset-specific classes inherit properties and methods from:
+- `DataExtractor`
+- `DataCleaning`
+- `DatabaseTableConnector` (the grandchild of the `DatabaseConnector` Abstract Base Class)
+
+The methods `extract_data()` and `clean_extracted_data()` are defined abstractly in the Abstract Base Classes `DataExtractor` and `DataCleaning` before being implemented to the specifications of the dataset in its respective class using the toolkit of inherited, and some bespoke, methods.
+
+**In the simplified UML diagram below, ETL_UTILITY_CLASSES is a stand-in used to represent all three utility classes (`DataExtractor`, `DataCleaning`, `DatabaseTableConnector`) which are multiply inherited by all dataset classes:**
+
+![Dataset classes](readme-images/mermaid-dataset-classes-pako.png)
+
+Since two of the datasets were sourced from an RDS database, and querying and extracting from the RDS database relied on methods overlapping with those required for loading data into the new PostgreSQL database *(e.g. creating a SQLAlchemy engine, getting existing table names and other internal and developer functionality)*, it made sense to define an Abstract Base Class - `DatabaseConnector` - from which `LocalDatabaseConnector` and `RDSDatabaseConnector` child classes could inherit and realise functionality:
+- The two child classes of DatabaseConnector provide implementations for the abstract method `_init_db_engine()` which is called by the contructor to set the `engine` property of the class (a SQLAlchemy engine for connecting to the relevant database).
+- `LocalDatabaseConnector` also has developer-targetted functionality with its `update_db()` method, which takes a SQL query as argument and can be used to update the local database during testing or after setup.
+- `DatabaseTableConnector` (extended by all the dataset classes) is the child class of `LocalDatabaseConnector` and defines the properties and methods by which dataset-specific instances connect to the local PostgreSQL database for the loading and post-loading transformation of those datasets.
+- The `RDSDatabaseConnector` class is **used** (rather than inherited) by the dataset-specific classes whose source data is located in the RDS database.
+
+**In the diagram below, DATASET_NOT_FROM_RDS_DATABASE is a stand-in used to represent the other four dataset-specific classes:**
+
+![UML class diagram](readme-images/mermaid-diagram-database-connector-classes.png)
+
+For this project, only the **Orders** and **User** data were sourced from the RDS Database, so just the `OrdersData` and `UserData` classes use the `_init_db_engine()` method of the `RDSDatabaseConnector` class to connect to the remote RDS Database and extract the required data, i.e. in their implementation of their `extract_data()` method:
+
+```python
+def extract_data(self) -> None:
+    conn = RDSDatabaseConnector()
+    extracted_data_df = self._read_rds_table(conn, self._source_db_table_name)
+    self._extracted_data = extracted_data_df
+```
+
+In all the dataset classes, the extracted data is loaded into a Pandas dataframe and saved to a property of the class called `_extracted_data`. In like fashion, when the class's cleaning method is called, a copy of the dataframe saved to this attribute is cleaned, and the dataframe after cleaning is saved to a `_cleaned_data` attribute. Then, it is the dataframe stored at the object's `_cleaned_data` attribute that is uploaded to the new database when the dataset's `upload_to_db()` method is called.
+
+A configuration dictionary exists for each of the dataset classes in a `config.py` file, which is accessed in the class's constructor method. Each dictionary stores key-value pairs relevant to that dataset's extraction, as well as the intended naming of the table in the newly centralised database. For exampe, the `self._source_db_table_name` property used in the `extract_data` method above, is set in the UserData constructor method using the value `user_data_config` paired with the key `"source_db_table_name"` in the `config`:
+
+
+```python
+# db_setup/datasets/config.py
+user_data_config = {"target_table_name": "dim_users",
+                    "source_db_table_name": "legacy_users"}
+```
+
+```python
+# db_setup/datasets/user_data.py
+from .config import user_data_config
+from ..data_cleaning import DataCleaning
+from ..data_extraction import DataExtractor
+from ..database_utils import DatabaseTableConnector, RDSDatabaseConnector
+
+
+class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
+
+    def __init__(self):
+        try:
+            DataExtractor.__init__(self)
+            DatabaseTableConnector.__init__(self, user_data_config['target_table_name'])
+            self._source_db_table_name = user_data_config['source_db_table_name']
+        except Exception:
+            print("Something went wrong when initialising the UserData child class.")
+```
+
+This enabled a streamlined and easily scalable implementation of the ETL process in the package's main script, where each dataset-specific class is imported and instantiated:
+
+```python
+# db_setup/__main__.py
+
+# INITIALISING INSTANCES OF ALL DATASET CLASSES
+card_data = CardData()
+stores_data = StoresData()
+user_data = UserData()
+products_data = ProductsData()
+orders_data = OrdersData()
+date_events_data = DateEventsData()
+
+dataset_instances = [card_data, stores_data, user_data, products_data, orders_data, date_events_data]
+
+# EXTRACTING, CLEANING AND UPLOADING ALL DATA INTO LOCAL DATABASE
+for dataset_instance in dataset_instances:
+    dataset_instance.extract_data()
+    dataset_instance.clean_extracted_data()
+    dataset_instance.upload_to_db()
+```
+
+Since, for this project, the datasets came from diverse sources and filetypes, structuring the program in this way enabled easy customisation of the final ETL methods, and also left open the possibility for removing or adding datasets, as well as for amending existing dataset properties and methods according to updated extraction, cleaning or loading needs.
+
 
 ## [File Structure](#file-structure)
 
