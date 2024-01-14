@@ -32,7 +32,7 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
           DatabaseTableConnector.__init__(self, user_data_config['target_table_name'])
           self._source_db_table_name = user_data_config['source_db_table_name']
         except Exception:
-          print("Something went wrong when initialising UserData child class")
+          print("Something went wrong when initialising the UserData child class")
 
     # define method from abstract base class to extract data
     def extract_data(self):
