@@ -50,8 +50,6 @@ I followed OOP principles of abstraction and encapsulation to maximise code reus
 
 In the diagram below, for ease of comprehension, the proto-class DATASET is used as a stand-in to demonstrate the chain of inheritance from the utility classes to each of the six dataset-specific classes:
 
-![UML Class diagram](readme-images/mermaid-class-diagram.png)
-
 ![UML Class diagram larger](readme-images/mermaid-class-diagram-2500-width.png)
 
 ## [File Structure](#file-structure)
