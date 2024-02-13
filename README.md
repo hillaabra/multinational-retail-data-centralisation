@@ -200,7 +200,7 @@ $ python -m db_setup
 ## [Usage](#usage)
 The completed database is composed of 5 dimension tables that relate to a single-source-of-truth table at its centre, which contains the definitive reference data for the organisation's retail orders.
 
-![The completed database ERD](readme-images/final-database-schema-erd.png)
+<img src="readme-images/final-database-schema-erd.png" alt="The completed database ERD" style="display: block; margin: 0 auto">
 
 SQL queries can be run on the centralised data from within your chosen graphical database management interface, e.g. `pgAdmin 4`, or from an IDE such as `VSCode` using a driver to connect to the database like VS Code's `SQLTools` extension, or from the command line using `psql`.
 See the [key findings](#findings-of-data-analysis) below for examples of the database in action.
