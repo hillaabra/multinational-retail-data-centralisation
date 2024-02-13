@@ -200,7 +200,7 @@ $ python -m db_setup
 ## [Usage](#usage)
 The completed database is composed of 5 dimension tables that relate to a single-source-of-truth table at its centre, which contains the definitive reference data for the organisation's retail orders.
 
-<p style="text-align: center">
+<p align="center">
     <img src="readme-images/final-database-schema-erd.png" alt="The completed database ERD">
 </p>
 
