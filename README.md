@@ -47,7 +47,7 @@ I followed **OOP principles of abstraction and encapsulation** to maximise code 
 
 **In the simplified UML diagram below, DATASET is used as a stand-in to represent all the dataset-specific classes, which follow identical rules of inheritance:**
 
-![UML Class diagram larger](readme-images/mermaid-class-diagram-pako.png)
+![UML Class diagram larger](readme-images/mermaid-class-diagram.png)
 
 Each of these dataset-specific classes inherit properties and methods from:
 - `DataExtractor`
@@ -58,7 +58,7 @@ The methods `extract_data()` and `clean_extracted_data()` are defined abstractly
 
 **In the simplified UML diagram below, ETL_UTILITY_CLASSES is a stand-in used to represent all three utility classes (`DataExtractor`, `DataCleaning`, `DatabaseTableConnector`) which are multiply inherited by all dataset classes:**
 
-![Dataset classes](readme-images/mermaid-dataset-classes-pako.png)
+![Dataset classes](readme-images/mermaid-dataset-classes.png)
 
 Since two of the datasets were sourced from an RDS database, and querying and extracting from the RDS database relied on methods overlapping with those required for loading data into the new PostgreSQL database *(e.g. creating a SQLAlchemy engine, getting existing table names and other internal and developer functionality)*, it made sense to define an Abstract Base Class - `DatabaseConnector` - from which `LocalDatabaseConnector` and `RDSDatabaseConnector` child classes could inherit and realise functionality:
 - The two child classes of DatabaseConnector provide implementations for the abstract method `_init_db_engine()`, which returns a SQLAlchemy engine for connecting to the relevant database.
