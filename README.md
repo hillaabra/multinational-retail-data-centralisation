@@ -3,7 +3,7 @@
 *Software Engineering & Data Manipulation Project - [AiCore](https://www.theaicore.com/) (November 2023)*
 
 
-![Static Badge](https://img.shields.io/badge/Skills%20%26%20Knowledge-A8B78B) ![Static Badge](https://img.shields.io/badge/Software%20Design-8A2BE2) ![Static Badge](https://img.shields.io/badge/Object%20Oriented%20Programming-8A2BE2) ![Static Badge](https://img.shields.io/badge/Webscraping-8A2BE2) ![Static Badge](https://img.shields.io/badge/Algorithms-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Structures-8A2BE2) ![Static Badge](https://img.shields.io/badge/AWS-8A2BE2) ![Static Badge](https://img.shields.io/badge/API%20Requests-8A2BE2) ![Static Badge](https://img.shields.io/badge/Error%20Handling-8A2BE2) ![Static Badge](https://img.shields.io/badge/Regular%20Expressions-8A2BE2) ![Static Badge](https://img.shields.io/badge/Command%20Line-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Cleaning-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Storage%20Optimisation-8A2BE2)  ![Static Badge](https://img.shields.io/badge/STAR--schema%20Database-8A2BE2) ![Static Badge](https://img.shields.io/badge/Multiple%20inheritance-8A2BE2)
+![Static Badge](https://img.shields.io/badge/Skills%20%26%20Knowledge-A8B78B) ![Static Badge](https://img.shields.io/badge/Software%20Design-8A2BE2) ![Static Badge](https://img.shields.io/badge/Object%20Oriented%20Programming-8A2BE2) ![Static Badge](https://img.shields.io/badge/Algorithms-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Structures-8A2BE2) ![Static Badge](https://img.shields.io/badge/AWS-8A2BE2) ![Static Badge](https://img.shields.io/badge/API%20Requests-8A2BE2) ![Static Badge](https://img.shields.io/badge/Error%20Handling-8A2BE2) ![Static Badge](https://img.shields.io/badge/Regular%20Expressions-8A2BE2) ![Static Badge](https://img.shields.io/badge/Command%20Line-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Cleaning-8A2BE2) ![Static Badge](https://img.shields.io/badge/Data%20Storage%20Optimisation-8A2BE2)  ![Static Badge](https://img.shields.io/badge/STAR--schema%20Database-8A2BE2)
 
 ![Static Badge](https://img.shields.io/badge/Languages,%20Tools%20%26%20Libraries-A8B78B) ![Static Badge](https://img.shields.io/badge/Python-8A2BE2) ![Static Badge](https://img.shields.io/badge/SQL-8A2BE2) ![Static Badge](https://img.shields.io/badge/Pandas-8A2BE2) ![Static Badge](https://img.shields.io/badge/NumPy-8A2BE2) ![Static Badge](https://img.shields.io/badge/SQLAlchemy-8A2BE2) ![Static Badge](https://img.shields.io/badge/PostgreSQL-8A2BE2) ![Static Badge](https://img.shields.io/badge/boto3-8A2BE2) ![Static Badge](https://img.shields.io/badge/AWS%20CLI-8A2BE2) ![Static Badge](https://img.shields.io/badge/pgAdmin%204-8A2BE2) ![Static Badge](https://img.shields.io/badge/Tabula-8A2BE2) ![Static Badge](https://img.shields.io/badge/Requests-8A2BE2) ![Static Badge](https://img.shields.io/badge/PyYAML-8A2BE2) ![Static Badge](https://img.shields.io/badge/JSON-8A2BE2) ![Static Badge](https://img.shields.io/badge/os.path-8A2BE2) ![Static Badge](https://img.shields.io/badge/dateutil-8A2BE2) ![Static Badge](https://img.shields.io/badge/SQLTools-8A2BE2) ![Static Badge](https://img.shields.io/badge/VS%20Code-8A2BE2) ![Static Badge](https://img.shields.io/badge/Git%20and%20GitHub-8A2BE2)
 
@@ -31,7 +31,7 @@ The database is produced in three phases:
 
 1.  Extracting the large datasets from multiple and varied data sources, including AWS RDS databases, AWS S3 buckets and API endpoints, and of filetypes and datatypes including PDF, CSV, JSON and PostgreSQL database tables.
 
-2. Cleaning the extracted data in Pandas: removing rows with entirely null or erroneous values, addressing typos in string values, such as non-numeric characters in alphanumeric fields, replacing isolated invalid values with NaN or Null, type- and downcasting columns. This was to ensure consistency in the data uploaded to the local server.
+2. Cleaning the extracted data using Pandas: removing rows with entirely null or erroneous values, addressing typos in string values, such as non-numeric characters in alphanumeric fields, replacing isolated invalid values with NaN or Null, type- and downcasting columns. This was to ensure consistency in the data uploaded to the local server.
 
 3. Uploading the cleaned datasets to a local PostgreSQL database, and finalising the database schema by type- and down-casting table columns, editing and creating columns and adding key constraints. All of these measures serve to optimise the data storage and access.
 
@@ -61,16 +61,16 @@ The methods `extract_data()` and `clean_extracted_data()` are defined abstractly
 ![Dataset classes](readme-images/mermaid-dataset-classes-pako.png)
 
 Since two of the datasets were sourced from an RDS database, and querying and extracting from the RDS database relied on methods overlapping with those required for loading data into the new PostgreSQL database *(e.g. creating a SQLAlchemy engine, getting existing table names and other internal and developer functionality)*, it made sense to define an Abstract Base Class - `DatabaseConnector` - from which `LocalDatabaseConnector` and `RDSDatabaseConnector` child classes could inherit and realise functionality:
-- The two child classes of DatabaseConnector provide implementations for the abstract method `_init_db_engine()` which is called by the contructor to set the `engine` property of the class (a SQLAlchemy engine for connecting to the relevant database).
-- `LocalDatabaseConnector` also has developer-targetted functionality with its `update_db()` method, which takes a SQL query as argument and can be used to update the local database during testing or after setup.
-- `DatabaseTableConnector` (extended by all the dataset classes) is the child class of `LocalDatabaseConnector` and defines the properties and methods by which dataset-specific instances connect to the local PostgreSQL database for the loading and post-loading transformation of those datasets.
+- The two child classes of DatabaseConnector provide implementations for the abstract method `_init_db_engine()`, which returns a SQLAlchemy engine for connecting to the relevant database.
+- `LocalDatabaseConnector` also has developer-targetted functionality for use during testing or after setup.
+- `DatabaseTableConnector` (extended by all the dataset classes) is the child class of `LocalDatabaseConnector` and defines the properties and methods by which single datasets are loaded into the new database and transfomed within it.
 - The `RDSDatabaseConnector` class is **used** (rather than inherited) by the dataset-specific classes whose source data is located in the RDS database.
 
 **In the diagram below, DATASET_NOT_FROM_RDS_DATABASE is a stand-in used to represent the other four dataset-specific classes:**
 
 ![UML class diagram](readme-images/mermaid-diagram-database-connector-classes.png)
 
-For this project, only the **Orders** and **User** data were sourced from the RDS Database, so just the `OrdersData` and `UserData` classes use the `_init_db_engine()` method of the `RDSDatabaseConnector` class to connect to the remote RDS Database and extract the required data, i.e. in their implementation of their `extract_data()` method:
+The **Orders** and **User** datasets were sourced from the RDS Database, so the `OrdersData` and `UserData` classes use the `_init_db_engine()` method of the `RDSDatabaseConnector` class to connect to the remote RDS Database and extract the required data, i.e. in their implementation of the `extract_data()` method:
 
 ```python
 def extract_data(self) -> None:
@@ -79,19 +79,20 @@ def extract_data(self) -> None:
     self._extracted_data = extracted_data_df
 ```
 
-In all the dataset classes, the extracted data is loaded into a Pandas dataframe and saved to a property of the class called `_extracted_data`. In like fashion, when the class's cleaning method is called, a copy of the dataframe saved to this attribute is cleaned, and the dataframe after cleaning is saved to a `_cleaned_data` attribute. Then, it is the dataframe stored at the object's `_cleaned_data` attribute that is uploaded to the new database when the dataset's `upload_to_db()` method is called.
+>In the ETL journey of all datasets, the extracted data is loaded into a Pandas dataframe, which is saved to an attribute of the class called `_extracted_data`. In like fashion, when the class's cleaning method is called, a copy of the dataframe saved to this attribute is cleaned, and the dataframe after cleaning is saved to a `_cleaned_data` attribute. The dataframe stored at the object's `_cleaned_data` attribute is uploaded to the new database when the dataset's `upload_to_db()` method is called.
 
-A configuration dictionary exists for each of the dataset classes in a `config.py` file, which is accessed in the class's constructor method. Each dictionary stores key-value pairs relevant to that dataset's extraction, as well as the intended naming of the table in the newly centralised database. For exampe, the `self._source_db_table_name` property used in the `extract_data` method above, is set in the UserData constructor method using the value `user_data_config` paired with the key `"source_db_table_name"` in the `config`:
-
+A configuration dictionary exists for each of the dataset classes in a `config.py` file, which is accessed in the class's constructor method. Each dictionary stores key-value pairs relevant to that dataset's extraction, as well as the intended naming of the table in the newly centralised database. For exampe, the `self._source_db_table_name` property used in the `extract_data` method above, is set in the `UserData` constructor method using the value of `"source_db_table_name"` in `user_data_config`:
 
 ```python
 # db_setup/datasets/config.py
+
 user_data_config = {"target_table_name": "dim_users",
                     "source_db_table_name": "legacy_users"}
 ```
 
 ```python
 # db_setup/datasets/user_data.py
+
 from .config import user_data_config
 from ..data_cleaning import DataCleaning
 from ..data_extraction import DataExtractor
@@ -109,7 +110,7 @@ class UserData(DataExtractor, DataCleaning, DatabaseTableConnector):
             print("Something went wrong when initialising the UserData child class.")
 ```
 
-This enabled a streamlined and easily scalable implementation of the ETL process in the package's main script, where each dataset-specific class is imported and instantiated:
+This enabled a streamlined and easily scalable implementation of the ETL pipeline in the package's main script, where each dataset-specific class is imported and instantiated:
 
 ```python
 # db_setup/__main__.py
@@ -131,7 +132,7 @@ for dataset_instance in dataset_instances:
     dataset_instance.upload_to_db()
 ```
 
-Since, for this project, the datasets came from diverse sources and filetypes, structuring the program in this way enabled easy customisation of the final ETL methods, and also left open the possibility for removing or adding datasets, as well as for amending existing dataset properties and methods according to updated extraction, cleaning or loading needs.
+Since the datasets came from diverse sources and filetypes, structuring the program in this way enabled easy customisation of the final ETL methods, and also left open the possibilities for removing or adding datasets, or amending existing dataset properties and methods according to updated extraction, cleaning or loading needs.
 
 
 ## [File Structure](#file-structure)
